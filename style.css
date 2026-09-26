@@ -1,1 +1,24 @@
-*{box-sizing:border-box}body{margin:0;background:#f0f2f5;color:#1c1e21;font:15px Arial,sans-serif}header{height:60px;background:#fff;box-shadow:0 1px 4px #bbb;display:flex;align-items:center;gap:18px;padding:0 5%;position:sticky;top:0;z-index:2}.brand{font-size:28px;font-weight:bold;color:#1877f2}.brand span{color:#263238}header input{width:min(360px,45vw);border:0;border-radius:22px;background:#f0f2f5;padding:12px}#who{margin-left:auto;font-weight:bold}.layout{max-width:1180px;margin:24px auto;display:grid;grid-template-columns:220px 1fr;gap:20px;padding:0 14px}.panel{background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px #ddd}.nav{height:max-content;display:grid;gap:8px}.nav button{text-align:left;background:#f0f2f5;color:#222}.content{min-width:0}.view{margin-bottom:18px}.hidden{display:none!important}h1,h2,h3{margin-top:0}input,textarea,select{display:block;width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;margin:9px 0;font:inherit}textarea{min-height:90px;resize:vertical}button{border:0;border-radius:8px;background:#1877f2;color:white;padding:11px 16px;font-weight:bold;cursor:pointer}button.secondary{background:#e4e6eb;color:#222}.actions{display:flex;gap:10px}.auth{min-height:calc(100vh - 60px);display:grid;place-items:center;padding:20px}.auth .panel{width:min(420px,100%)}small{display:block;color:#d33;margin-top:10px}.item{padding:13px 0;border-bottom:1px solid #eee;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.item .grow{flex:1}.item p{margin:4px 0;color:#65676b}.chatgrid{display:grid;grid-template-columns:190px 1fr;gap:14px}.messages{height:360px;overflow:auto;background:#f7f8fa;border-radius:8px;padding:12px}.bubble{padding:9px 12px;background:#e4e6eb;border-radius:14px;margin:8px 0;max-width:80%;width:max-content}.bubble.mine{background:#dbeafe;margin-left:auto}.send{display:flex;gap:8px}.send input{margin:8px 0}.stat{background:#eaf3ff;border-radius:12px;padding:20px;display:flex;align-items:center;gap:15px}.stat b{font-size:42px;color:#1877f2}.stat span{font-weight:bold}@media(max-width:700px){.layout{grid-template-columns:1fr}.nav{grid-template-columns:repeat(2,1fr)}.chatgrid{grid-template-columns:1fr}header{padding:0 12px}}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+body { background: #f0f2f5; color: #333; display: flex; flex-direction: column; height: 100vh; }
+header { background: #fff; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e1e8ed; }
+.brand { font-size: 20px; font-weight: bold; color: #1877f2; }
+.brand span { color: #42b72a; }
+header input { padding: 8px 12px; border-radius: 20px; border: 1px solid #ccd0d5; width: 250px; outline: none; }
+.hidden { display: none !important; }
+.auth { flex: 1; display: flex; align-items: center; justify-content: center; background: #f0f2f5; }
+.panel { background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+.auth h1 { font-size: 24px; margin-bottom: 8px; color: #1c1e21; }
+.auth p { margin-bottom: 16px; color: #606770; font-size: 14px; }
+.auth input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ccd0d5; border-radius: 6px; outline: none; }
+.actions { display: flex; gap: 10px; }
+.actions button { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; background: #1877f2; color: #fff; }
+.actions button.secondary { background: #42b72a; }
+#authMsg { display: block; margin-top: 12px; font-size: 14px; text-align: center; }
+.layout { display: flex; flex: 1; overflow: hidden; }
+aside.nav { width: 260px; background: #fff; border-right: 1px solid #e1e8ed; display: flex; flex-direction: column; gap: 8px; padding: 16px; box-shadow: none; border-radius: 0; }
+aside.nav button { width: 100%; padding: 10px 14px; text-align: left; background: transparent; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; font-weight: 500; }
+aside.nav button:hover { background: #f2f2f2; }
+.content { flex: 1; padding: 24px; overflow-y: auto; max-width: 800px; }
+.view h2 { margin-bottom: 16px; }
+textarea { width: 100%; padding: 12px; border: 1px solid #ccd0d5; border-radius: 8px; resize: none; height: 80px; margin-bottom: 8px; outline: none; }
+#postBtn { padding: 8px 16px; background: #1877f2; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 16px; }
