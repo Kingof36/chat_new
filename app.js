@@ -1,5 +1,4 @@
-// Dán Link Web App Google Apps Script của bạn vào đây (kết thúc bằng /exec)
-const API_URL = "https://script.google.com/macros/s/AKfycbymOnvkF93anTrm54WRAdJhgQQeoBG4xhZAKQB-TKZ_tHwBL_8DDBuN0rOE69CF1Ypy/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwBs6cSnm_AbVxrfWo3GSSNsRgsR9X7QM5lQwD0kuhy7Wj_nFWkthxipzCGw-tIFxzy/exec";
 
 let currentUser = null;
 try {
@@ -122,7 +121,7 @@ async function handleLogin() {
         localStorage.setItem('friendbook_user', JSON.stringify(currentUser));
       } catch (e) {}
       authMsg.textContent = '';
-      showMainApp(); // Chuyển giao diện tức thì, không bị kẹt
+      showMainApp();
     } else {
       authMsg.style.color = 'red';
       authMsg.textContent = result.message || 'Sai email hoặc mật khẩu!';
