@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzIm8MBB6pBhhV1HbcqYgkQN9GLyCr5NkOnWxi3Lv1yaL7UJnn5Y3XWGNHej0DQ66XZ1Q/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzuZQpZLvF_QNN5zq7PTkcB_qq02bPpU0J3rUru3hvH0npBkNFD5oAeGeaXGUU-_d-a/exec";
 
 let currentUser = null;
 let currentChatUser = null;
