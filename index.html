@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FriendBook • Kết bạn & Phiếu bé ngoan</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="brand">f<span>riend</span></div>
+    <input id="search" placeholder="Tìm kiếm bạn bè..." />
+    <span id="who"></span>
+    <button id="logout" class="hidden">Đăng xuất</button>
+  </header>
+  
+  <main id="auth" class="auth">
+    <section class="panel">
+      <h1>Chào mừng bạn!</h1>
+      <p>Kết nối bạn bè và nhận phiếu bé ngoan.</p>
+      <input id="name" placeholder="Tên hiển thị">
+      <input id="email" placeholder="Email">
+      <input id="password" type="password" placeholder="Mật khẩu">
+      <div class="actions">
+        <button id="register">Đăng ký</button>
+        <button id="login" class="secondary">Đăng nhập</button>
+      </div>
+      <small id="authMsg"></small>
+    </section>
+  </main>
+
+  <main id="app" class="layout hidden">
+    <aside class="panel nav">
+      <button data-tab="feed">Bảng tin</button>
+      <button data-tab="friends">Bạn bè</button>
+      <button data-tab="chat">Tin nhắn</button>
+      <button data-tab="rewards">Phiếu bé ngoan</button>
+      <button data-tab="admin" id="adminTab" class="hidden">Quản trị</button>
+    </aside>
+    
+    <section class="content">
+      <div id="feed" class="panel view">
+        <h2>Bảng tin</h2>
+        <textarea id="postText" placeholder="Bạn đang nghĩ gì?"></textarea>
+        <button id="postBtn">Đăng bài</button>
+        <div id="posts"></div>
+      </div>
+      
+      <div id="friends" class="panel view hidden">
+        <h2>Tìm bạn bè</h2>
+        <div id="users"></div>
+        <h3>Lời mời kết bạn</h3>
+        <div id="requests"></div>
+        <h3>Bạn bè của tôi</h3>
+        <div id="myFriends"></div>
+      </div>
+      
+      <div id="chat" class="panel view hidden">
+        <h2>Tin nhắn</h2>
+        <div class="chatgrid">
+          <div id="chatFriends"></div>
+          <div>
+            <div id="messages" class="messages">Chọn một người bạn để nhắn tin.</div>
+            <div class="send">
+              <input id="message" placeholder="Viết tin nhắn...">
+              <button id="sendBtn">Gửi</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div id="rewards" class="panel view hidden">
+        <h2>Phiếu bé ngoan</h2>
+        <p>Phiếu được admin phát. Tổng số phiếu tự tính theo tuần (Thứ Hai–Chủ Nhật); tuần mới bắt đầu sẽ hiển thị lại từ 0.</p>
+        <div class="stat"><b id="weekCount">0</b><span>Phiếu trong tuần này</span></div>
+        <p id="weekRange"></p>
+        <h3>Lịch sử phiếu</h3>
+        <div id="rewardHistory"></div>
+      </div>
+      
+      <div id="admin" class="panel view hidden">
+        <h2>Quản trị viên</h2>
+        <p>Phát phiếu bé ngoan cho người dùng.</p>
+        <select id="awardUser"></select>
+        <input id="awardReason" placeholder="Lý do / lời khen (không bắt buộc)">
+        <button id="awardBtn">Phát 1 phiếu</button>
+        <small id="adminMsg"></small>
+        <h3>Thống kê tuần hiện tại</h3>
+        <div id="adminStats"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Khai báo biến URL Apps Script toàn cục để tệp app.js có thể gọi -->
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwhiOCOuW87yjr2-BOX-YQIDXpOloR4DpE0qZXy4OCSdNkT1XGbZCmkA2W1vH3kAEsk/exec";
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
