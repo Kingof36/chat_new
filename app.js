@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzVDL_qq4-FrFwQt8XikdDAeCZ80b4NEq8OrF6GVXcNYH_ETvD7sy8Q7r_I_rxkbf7-Vg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyKm7Rqhmz33jHtbvLwJdjRxHCGZ4EJGAvH-55wVCwdBDTFrY_TuUggAAiviqQtSvLNIg/exec";
 
 let currentUser = null;
 let currentChatUser = null;
@@ -43,10 +43,16 @@ function initApp() {
     imageInput.addEventListener('change', handleImageUpload);
   }
 
-  // Friends events
+  // Friends events (Tìm kiếm bạn bè)
   const searchBtn = document.getElementById('searchFriendBtn');
   if (searchBtn) {
     searchBtn.addEventListener('click', handleSearchFriends);
+  }
+  const searchInput = document.getElementById('searchFriendInput');
+  if (searchInput) {
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleSearchFriends();
+    });
   }
 
   // Admin event
@@ -199,7 +205,7 @@ async function handleCreatePost() {
   loadFeed();
 }
 
-// Kết bạn & Tìm kiếm
+// Kết bạn & Tìm kiếm theo tên hiển thị
 function loadFriendsData() {
   loadFriendRequests();
   loadMyFriends();
@@ -208,22 +214,37 @@ function loadFriendsData() {
 async function handleSearchFriends() {
   const keyword = document.getElementById('searchFriendInput').value.trim();
   const resultsContainer = document.getElementById('searchResults');
-  if (!keyword) return;
+  
+  if (!keyword) {
+    resultsContainer.innerHTML = '<p style="color: red; font-size: 13px;">Vui lòng nhập tên hiển thị để tìm kiếm!</p>';
+    return;
+  }
 
-  resultsContainer.innerHTML = '<p>Đang tìm kiếm...</p>';
+  resultsContainer.innerHTML = '<p style="font-size: 13px;">Đang tìm kiếm...</p>';
   try {
-    const res = await fetch(`${API_URL}?action=searchUsers&keyword=${encodeURIComponent(keyword)}&email=${currentUser.email}`);
+    const res = await fetch(`${API_URL}?action=searchUsers&keyword=${encodeURIComponent(keyword)}&email=${encodeURIComponent(currentUser.email)}`);
     const result = await res.json();
+    
     if (result.status === 'success') {
+      if (result.users.length === 0) {
+        resultsContainer.innerHTML = '<p style="font-size: 13px; color: #666;">Không tìm thấy người dùng có tên này.</p>';
+        return;
+      }
+
       resultsContainer.innerHTML = result.users.map(u => `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee;">
-          <span><b>${u.name}</b> (${u.email})</span>
-          <button onclick="sendFriendRequest('${u.email}')" style="padding: 6px 12px; background: #1877f2; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Kết bạn</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; background: #fff; border-radius: 6px; margin-bottom: 6px;">
+          <div>
+            <b style="font-size: 14px; color: #1877f2;">${u.name}</b><br>
+            <small style="color: #666;">${u.email}</small>
+          </div>
+          <button onclick="sendFriendRequest('${u.email}')" style="padding: 6px 14px; background: #1877f2; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;">Kết bạn</button>
         </div>
-      `).join('') || '<p>Không tìm thấy người dùng phù hợp.</p>';
+      `).join('');
+    } else {
+      resultsContainer.innerHTML = '<p style="color: red; font-size: 13px;">Lỗi tìm kiếm từ máy chủ.</p>';
     }
   } catch (e) {
-    resultsContainer.innerHTML = '<p>Lỗi tìm kiếm.</p>';
+    resultsContainer.innerHTML = '<p style="color: red; font-size: 13px;">Lỗi kết nối mạng.</p>';
   }
 }
 
@@ -244,7 +265,7 @@ async function loadFriendRequests() {
   const container = document.getElementById('requests');
   if (!container) return;
   try {
-    const res = await fetch(`${API_URL}?action=getFriendRequests&email=${currentUser.email}`);
+    const res = await fetch(`${API_URL}?action=getFriendRequests&email=${encodeURIComponent(currentUser.email)}`);
     const result = await res.json();
     if (result.status === 'success') {
       container.innerHTML = result.requests.map(r => `
@@ -264,7 +285,7 @@ async function acceptFriendRequest(fromEmail) {
       body: JSON.stringify({ action: 'acceptFriendRequest', user1: currentUser.email, user2: fromEmail })
     });
     const result = await res.json();
-    alert(result.message || 'Đã chấp nhận kết bạn!');
+    alert(result.message || 'Đã kết bạn thành công!');
     loadFriendsData();
   } catch (e) {
     alert('Lỗi kết nối.');
@@ -275,7 +296,7 @@ async function loadMyFriends() {
   const container = document.getElementById('myFriends');
   if (!container) return;
   try {
-    const res = await fetch(`${API_URL}?action=getMyFriends&email=${currentUser.email}`);
+    const res = await fetch(`${API_URL}?action=getMyFriends&email=${encodeURIComponent(currentUser.email)}`);
     const result = await res.json();
     if (result.status === 'success') {
       container.innerHTML = result.friends.map(f => `
@@ -365,7 +386,7 @@ async function sendMessage() {
 // Phiếu bé ngoan & Thông báo
 async function checkRewardsNotification() {
   try {
-    const res = await fetch(`${API_URL}?action=getRewards&email=${currentUser.email}`);
+    const res = await fetch(`${API_URL}?action=getRewards&email=${encodeURIComponent(currentUser.email)}`);
     const result = await res.json();
     if (result.status === 'success') {
       const lastCount = localStorage.getItem('last_reward_count') || 0;
@@ -379,7 +400,7 @@ async function checkRewardsNotification() {
 
 async function loadRewards() {
   try {
-    const res = await fetch(`${API_URL}?action=getRewards&email=${currentUser.email}`);
+    const res = await fetch(`${API_URL}?action=getRewards&email=${encodeURIComponent(currentUser.email)}`);
     const result = await res.json();
     if (result.status === 'success') {
       document.getElementById('weekCount').textContent = result.count;
