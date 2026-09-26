@@ -1,5 +1,5 @@
 // Dán URL Web App của Google Apps Script vào đây sau khi triển khai.
-const API_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+const API_URL = "https://script.google.com/macros/s/AKfycbxTsZpoNUkeV5_rSz9CGoj1dALJgYIAfA6QIFaUTI5WfvpffTRQ112mxIw26xdm8K16/exec";
 let me=null, token="", activeChat="";
 const $=id=>document.getElementById(id);
 async function api(action,data={}){if(!API_URL.startsWith("https://"))throw Error("Bạn chưa cấu hình API_URL trong app.js");const r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,token,...data})});const j=await r.json();if(!j.ok)throw Error(j.error||"Có lỗi xảy ra");return j.data}
