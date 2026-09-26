@@ -42,7 +42,7 @@ function showMainApp() {
   document.getElementById('logout').classList.remove('hidden');
   document.getElementById('who').textContent = `Xin chào, ${currentUser.name || currentUser.email}`;
   
-  if (currentUser.email === 'admin@friendbook.com') {
+  if (currentUser.email === 'lengocnhu1805@gmail.com') {
     document.getElementById('adminTab').classList.remove('hidden');
   }
 
