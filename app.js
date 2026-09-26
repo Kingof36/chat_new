@@ -84,7 +84,7 @@ function showMainApp() {
   document.getElementById('logout').classList.remove('hidden');
   document.getElementById('who').textContent = `Xin chào, ${currentUser.name || currentUser.email}`;
   
-  if (currentUser.email === 'admin@friendbook.com' || currentUser.email === 'admin') {
+  if (currentUser.email === 'lengocnhu1805@gmail.com' || currentUser.email === 'admin') {
     document.getElementById('adminTab').classList.remove('hidden');
     loadAdminUsers();
   }
