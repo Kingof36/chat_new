@@ -21,7 +21,7 @@ function initApp() {
     showAuthScreen();
   }
 
-  // Auth events
+  // Auth
   const regBtn = document.getElementById('register');
   const logBtn = document.getElementById('login');
   const logOutBtn = document.getElementById('logout');
@@ -29,11 +29,11 @@ function initApp() {
   if (logBtn) logBtn.addEventListener('click', handleLogin);
   if (logOutBtn) logOutBtn.addEventListener('click', handleLogout);
 
-  // Post events
+  // Post
   const postBtn = document.getElementById('postBtn');
   if (postBtn) postBtn.addEventListener('click', handleCreatePost);
 
-  // Chat events
+  // Chat
   const sendBtn = document.getElementById('sendBtn');
   const attachBtn = document.getElementById('attachBtn');
   const imageInput = document.getElementById('imageInput');
@@ -43,11 +43,9 @@ function initApp() {
     imageInput.addEventListener('change', handleImageUpload);
   }
 
-  // Friends events (Tìm kiếm bạn bè)
+  // Friends
   const searchBtn = document.getElementById('searchFriendBtn');
-  if (searchBtn) {
-    searchBtn.addEventListener('click', handleSearchFriends);
-  }
+  if (searchBtn) searchBtn.addEventListener('click', handleSearchFriends);
   const searchInput = document.getElementById('searchFriendInput');
   if (searchInput) {
     searchInput.addEventListener('keypress', (e) => {
@@ -55,11 +53,11 @@ function initApp() {
     });
   }
 
-  // Admin event
+  // Admin
   const awardBtn = document.getElementById('awardBtn');
   if (awardBtn) awardBtn.addEventListener('click', handleAwardBadge);
 
-  // Modal close
+  // Modal
   const closeModal = document.getElementById('closeModal');
   if (closeModal) {
     closeModal.addEventListener('click', () => {
@@ -67,7 +65,7 @@ function initApp() {
     });
   }
 
-  // Tab navigation
+  // Tabs
   document.querySelectorAll('.nav button[data-tab]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       switchTab(e.target.getAttribute('data-tab'));
@@ -95,9 +93,7 @@ function showAuthScreen() {
   document.getElementById('app').classList.add('hidden');
   document.getElementById('logout').classList.add('hidden');
   document.getElementById('who').textContent = '';
-  try {
-    localStorage.removeItem('friendbook_user');
-  } catch (e) {}
+  try { localStorage.removeItem('friendbook_user'); } catch (e) {}
 }
 
 async function handleRegister() {
@@ -181,7 +177,7 @@ function switchTab(tabName) {
 async function loadFeed() {
   const container = document.getElementById('posts');
   if (!container) return;
-  container.innerHTML = '<p>Đang tải...</p>';
+  container.innerHTML = '<p>Đang tải bảng tin...</p>';
   try {
     const res = await fetch(`${API_URL}?action=getPosts`);
     const result = await res.json();
@@ -192,7 +188,7 @@ async function loadFeed() {
           <p>${p.content}</p>
           <small>${p.time}</small>
         </div>
-      `).join('') || '<p>Chưa có bài viết.</p>';
+      `).join('') || '<p>Chưa có bài viết nào.</p>';
     }
   } catch (e) { container.innerHTML = '<p>Lỗi tải bảng tin.</p>'; }
 }
@@ -216,35 +212,33 @@ async function handleSearchFriends() {
   const resultsContainer = document.getElementById('searchResults');
   
   if (!keyword) {
-    resultsContainer.innerHTML = '<p style="color: red; font-size: 13px;">Vui lòng nhập tên hiển thị để tìm kiếm!</p>';
+    resultsContainer.innerHTML = '<p style="padding: 10px; color: red; font-size: 13px;">Vui lòng nhập tên hiển thị để tìm kiếm!</p>';
     return;
   }
 
-  resultsContainer.innerHTML = '<p style="font-size: 13px;">Đang tìm kiếm...</p>';
+  resultsContainer.innerHTML = '<p style="padding: 10px; font-size: 13px;">Đang tìm kiếm...</p>';
   try {
     const res = await fetch(`${API_URL}?action=searchUsers&keyword=${encodeURIComponent(keyword)}&email=${encodeURIComponent(currentUser.email)}`);
     const result = await res.json();
     
     if (result.status === 'success') {
       if (result.users.length === 0) {
-        resultsContainer.innerHTML = '<p style="font-size: 13px; color: #666;">Không tìm thấy người dùng có tên này.</p>';
+        resultsContainer.innerHTML = '<p style="padding: 10px; font-size: 13px; color: #666;">Không tìm thấy người dùng phù hợp.</p>';
         return;
       }
 
       resultsContainer.innerHTML = result.users.map(u => `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; background: #fff; border-radius: 6px; margin-bottom: 6px;">
+        <div class="friend-item">
           <div>
-            <b style="font-size: 14px; color: #1877f2;">${u.name}</b><br>
-            <small style="color: #666;">${u.email}</small>
+            <b style="font-size: 14px; color: #050505;">${u.name}</b><br>
+            <small style="color: #65676b;">${u.email}</small>
           </div>
-          <button onclick="sendFriendRequest('${u.email}')" style="padding: 6px 14px; background: #1877f2; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;">Kết bạn</button>
+          <button onclick="sendFriendRequest('${u.email}')">Kết bạn</button>
         </div>
       `).join('');
-    } else {
-      resultsContainer.innerHTML = '<p style="color: red; font-size: 13px;">Lỗi tìm kiếm từ máy chủ.</p>';
     }
   } catch (e) {
-    resultsContainer.innerHTML = '<p style="color: red; font-size: 13px;">Lỗi kết nối mạng.</p>';
+    resultsContainer.innerHTML = '<p style="padding: 10px; color: red; font-size: 13px;">Lỗi kết nối.</p>';
   }
 }
 
@@ -256,9 +250,8 @@ async function sendFriendRequest(targetEmail) {
     });
     const result = await res.json();
     alert(result.message || 'Đã gửi lời mời kết bạn!');
-  } catch (e) {
-    alert('Lỗi kết nối.');
-  }
+    loadFriendsData();
+  } catch (e) { alert('Lỗi kết nối.'); }
 }
 
 async function loadFriendRequests() {
@@ -269,11 +262,14 @@ async function loadFriendRequests() {
     const result = await res.json();
     if (result.status === 'success') {
       container.innerHTML = result.requests.map(r => `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee;">
-          <span><b>${r.name}</b> (${r.email})</span>
-          <button onclick="acceptFriendRequest('${r.email}')" style="padding: 6px 12px; background: #42b72a; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Chấp nhận</button>
+        <div class="friend-item">
+          <div>
+            <b style="font-size: 14px; color: #050505;">${r.name}</b><br>
+            <small style="color: #65676b;">${r.email}</small>
+          </div>
+          <button class="accept" onclick="acceptFriendRequest('${r.email}')">Chấp nhận</button>
         </div>
-      `).join('') || '<p style="color: #666; font-size: 13px;">Không có lời mời kết bạn nào.</p>';
+      `).join('') || '<p style="padding: 10px; color: #666; font-size: 13px;">Không có lời mời kết bạn nào.</p>';
     }
   } catch (e) {}
 }
@@ -287,9 +283,7 @@ async function acceptFriendRequest(fromEmail) {
     const result = await res.json();
     alert(result.message || 'Đã kết bạn thành công!');
     loadFriendsData();
-  } catch (e) {
-    alert('Lỗi kết nối.');
-  }
+  } catch (e) { alert('Lỗi kết nối.'); }
 }
 
 async function loadMyFriends() {
@@ -300,22 +294,26 @@ async function loadMyFriends() {
     const result = await res.json();
     if (result.status === 'success') {
       container.innerHTML = result.friends.map(f => `
-        <div style="padding: 8px; border-bottom: 1px solid #eee;">
-          👤 <b>${f.name}</b> (${f.email})
+        <div class="friend-item">
+          <div>
+            <b style="font-size: 14px; color: #050505;">👤 ${f.name}</b><br>
+            <small style="color: #65676b;">${f.email}</small>
+          </div>
+          <button onclick="switchTab('chat'); selectChatUser('${f.email}', '${f.name}');">Nhắn tin</button>
         </div>
-      `).join('') || '<p style="color: #666; font-size: 13px;">Chưa có bạn bè nào.</p>';
+      `).join('') || '<p style="padding: 10px; color: #666; font-size: 13px;">Chưa có bạn bè nào.</p>';
     }
   } catch (e) {}
 }
 
-// Chat Messenger & Gửi ảnh
+// Messenger & Gửi ảnh
 function handleImageUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = function(uploadEvent) {
     base64Image = uploadEvent.target.result;
-    alert('Đã đính kèm ảnh! Bấm Gửi để gửi ảnh.');
+    alert('Đã đính kèm ảnh thành công! Bấm Gửi để gửi ảnh.');
   };
   reader.readAsDataURL(file);
 }
@@ -323,23 +321,23 @@ function handleImageUpload(e) {
 async function loadChatUsers() {
   const list = document.getElementById('chatFriends');
   if (!list) return;
-  list.innerHTML = '<p>Đang tải danh sách...</p>';
+  list.innerHTML = '<p style="padding: 12px; font-size: 13px;">Đang tải danh sách...</p>';
   try {
-    const res = await fetch(`${API_URL}?action=getUsers`);
+    const res = await fetch(`${API_URL}?action=getMyFriends&email=${encodeURIComponent(currentUser.email)}`);
     const result = await res.json();
     if (result.status === 'success') {
-      list.innerHTML = result.users.filter(u => u.email !== currentUser.email).map(u => `
+      list.innerHTML = result.friends.map(u => `
         <div class="chat-user-item" onclick="selectChatUser('${u.email}', '${u.name}')">
           👤 ${u.name}
         </div>
-      `).join('') || '<p>Chưa có người dùng nào khác.</p>';
+      `).join('') || '<p style="padding: 12px; font-size: 13px; color: #666;">Chưa có bạn bè để nhắn tin. Hãy kết bạn trước nhé!</p>';
     }
-  } catch (e) { list.innerHTML = '<p>Lỗi tải danh sách.</p>'; }
+  } catch (e) { list.innerHTML = '<p style="padding: 12px;">Lỗi tải danh sách.</p>'; }
 }
 
 function selectChatUser(email, name) {
   currentChatUser = email;
-  document.getElementById('chatTitle').textContent = `Đang chat với: ${name}`;
+  document.getElementById('chatTitlesurname') || (document.getElementById('chatTitle').textContent = `Đang chat với: ${name}`);
   loadMessages();
 }
 
@@ -353,10 +351,10 @@ async function loadMessages() {
       msgContainer.innerHTML = result.messages.map(m => `
         <div class="message-bubble ${m.from === currentUser.email ? 'sent' : 'received'}">
           <p>${m.text}</p>
-          ${m.image ? `<img src="${m.image}" style="max-width: 200px; border-radius: 6px; margin-top: 5px;" />` : ''}
+          ${m.image ? `<img src="${m.image}" style="max-width: 200px; border-radius: 8px; margin-top: 5px; display: block;" />` : ''}
           <small>${m.time}</small>
         </div>
-      `).join('') || '<p>Chưa có tin nhắn nào.</p>';
+      `).join('') || '<p style="text-align: center; color: #888; font-size: 13px;">Hãy gửi tin nhắn đầu tiên cho bạn ấy!</p>';
       msgContainer.scrollTop = msgContainer.scrollHeight;
     }
   } catch (e) {}
@@ -389,8 +387,8 @@ async function checkRewardsNotification() {
     const res = await fetch(`${API_URL}?action=getRewards&email=${encodeURIComponent(currentUser.email)}`);
     const result = await res.json();
     if (result.status === 'success') {
-      const lastCount = localStorage.getItem('last_reward_count') || 0;
-      if (result.count > lastCount && result.count > 0) {
+      const lastCount = parseInt(localStorage.getItem('last_reward_count') || 0);
+      if (result.count > lastCount) {
         document.getElementById('badgeModal').classList.remove('hidden');
         localStorage.setItem('last_reward_count', result.count);
       }
@@ -405,8 +403,8 @@ async function loadRewards() {
     if (result.status === 'success') {
       document.getElementById('weekCount').textContent = result.count;
       document.getElementById('rewardHistory').innerHTML = result.history.map(h => `
-        <div class="reward-item">⭐ Nhận 1 phiếu lúc ${h.time} (Lý do: ${h.reason})</div>
-      `).join('') || '<p>Chưa có lịch sử nhận phiếu.</p>';
+        <div class="reward-item">⭐ Nhận 1 phiếu bé ngoan lúc ${h.time} <br><small>Lý do: ${h.reason}</small></div>
+      `).join('') || '<p style="font-size: 13px; color: #666;">Chưa có lịch sử nhận phiếu.</p>';
     }
   } catch (e) {}
 }
@@ -432,6 +430,7 @@ async function handleAwardBadge() {
   if (result.status === 'success') {
     msg.style.color = 'green';
     msg.textContent = 'Phát phiếu thành công!';
+    document.getElementById('awardReason').value = '';
   } else {
     msg.style.color = 'red';
     msg.textContent = 'Lỗi phát phiếu.';
