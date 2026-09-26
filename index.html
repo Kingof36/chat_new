@@ -1,105 +1,17 @@
-<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>FriendBook • Kết bạn & Phiếu bé ngoan</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <header>
-    <div class="brand">f<span>riend</span></div>
-    <input id="search" placeholder="Tìm kiếm bạn bè..." />
-    <span id="who"></span>
-    <button id="logout" class="hidden">Đăng xuất</button>
-  </header>
+<!-- Thay thế phần div id="friends" trong index.html bằng đoạn này -->
+<div id="friends" class="panel view hidden">
+  <h2>Bạn bè</h2>
   
-  <!-- Popup thông báo nhận phiếu bé ngoan -->
-  <div id="badgeModal" class="modal hidden">
-    <div class="modal-content">
-      <h3>🎉 Chúc mừng!</h3>
-      <p id="badgeMsg">Bạn vừa nhận được một Phiếu bé ngoan mới từ Quản trị viên!</p>
-      <button id="closeModal">Tuyệt vời</button>
-    </div>
+  <h3>Tìm kiếm bạn bè</h3>
+  <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+    <input id="searchFriendInput" placeholder="Nhập tên hoặc email bạn bè..." style="margin-bottom: 0;">
+    <button id="searchFriendBtn" style="padding: 0 16px; background: #1877f2; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Tìm</button>
   </div>
+  <div id="searchResults" style="margin-bottom: 20px;"></div>
 
-  <main id="auth" class="auth">
-    <section class="panel">
-      <h1>Chào mừng bạn!</h1>
-      <p>Kết nối bạn bè và nhận phiếu bé ngoan.</p>
-      <input id="name" placeholder="Tên hiển thị">
-      <input id="email" placeholder="Email">
-      <input id="password" type="password" placeholder="Mật khẩu">
-      <div class="actions">
-        <button id="register">Đăng ký</button>
-        <button id="login" class="secondary">Đăng nhập</button>
-      </div>
-      <small id="authMsg"></small>
-    </section>
-  </main>
+  <h3>Lời mời kết bạn</h3>
+  <div id="requests" style="margin-bottom: 20px;"></div>
 
-  <main id="app" class="layout hidden">
-    <aside class="panel nav">
-      <button data-tab="feed">Bảng tin</button>
-      <button data-tab="friends">Bạn bè</button>
-      <button data-tab="chat">Tin nhắn Messenger</button>
-      <button data-tab="rewards">Phiếu bé ngoan</button>
-      <button data-tab="admin" id="adminTab" class="hidden">Quản trị</button>
-    </aside>
-    
-    <section class="content">
-      <div id="feed" class="panel view">
-        <h2>Bảng tin</h2>
-        <textarea id="postText" placeholder="Bạn đang nghĩ gì?"></textarea>
-        <button id="postBtn">Đăng bài</button>
-        <div id="posts"></div>
-      </div>
-      
-      <div id="friends" class="panel view hidden">
-        <h2>Tìm bạn bè</h2>
-        <div id="users"></div>
-        <h3>Lời mời kết bạn</h3>
-        <div id="requests"></div>
-        <h3>Bạn bè của tôi</h3>
-        <div id="myFriends"></div>
-      </div>
-      
-      <!-- Giao diện Chat kiểu Messenger có hỗ trợ gửi ảnh -->
-      <div id="chat" class="panel view hidden">
-        <h2>Tin nhắn Messenger</h2>
-        <div class="chatgrid">
-          <div id="chatFriends" class="chat-friends-list">Chọn bạn để chat...</div>
-          <div class="chat-box-container">
-            <div id="chatTitle" class="chat-title">Chưa chọn cuộc trò chuyện</div>
-            <div id="messages" class="messages">Chọn một người bạn bên trái để bắt đầu nhắn tin.</div>
-            <div class="send">
-              <input type="file" id="imageInput" accept="image/*" style="display: none;">
-              <button id="attachBtn" title="Gửi ảnh">📷</button>
-              <input id="message" placeholder="Nhập tin nhắn...">
-              <button id="sendBtn">Gửi</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div id="rewards" class="panel view hidden">
-        <h2>Phiếu bé ngoan</h2>
-        <p>Phiếu được admin phát. Tổng số phiếu tự tính theo tuần.</p>
-        <div class="stat"><b id="weekCount">0</b><span>Phiếu trong tuần này</span></div>
-        <div id="rewardHistory"></div>
-      </div>
-      
-      <div id="admin" class="panel view hidden">
-        <h2>Quản trị viên</h2>
-        <p>Phát phiếu bé ngoan cho người dùng.</p>
-        <select id="awardUser"></select>
-        <input id="awardReason" placeholder="Lý do / lời khen (không bắt buộc)">
-        <button id="awardBtn">Phát 1 phiếu</button>
-        <small id="adminMsg"></small>
-      </div>
-    </section>
-  </main>
-
-  <script src="app.js"></script>
-</body>
-</html>
+  <h3>Danh sách bạn bè</h3>
+  <div id="myFriends"></div>
+</div>
