@@ -8,8 +8,7 @@
 </head>
 <body>
   <header>
-    <div class="brand">f<span>riend</span></div>
-    <input id="search" placeholder="Tìm kiếm..." />
+    <div class="brand">f<span>riend</span>book</div>
     <span id="who"></span>
     <button id="logout" class="hidden">Đăng xuất</button>
   </header>
@@ -25,7 +24,7 @@
 
   <main id="auth" class="auth">
     <section class="panel">
-      <h1>Chào mừng bạn!</h1>
+      <h1>FriendBook</h1>
       <p>Kết nối bạn bè và nhận phiếu bé ngoan.</p>
       <input id="name" placeholder="Tên hiển thị">
       <input id="email" placeholder="Email">
@@ -40,42 +39,43 @@
 
   <main id="app" class="layout hidden">
     <aside class="panel nav">
-      <button data-tab="feed">Bảng tin</button>
-      <button data-tab="friends">Bạn bè</button>
-      <button data-tab="chat">Tin nhắn Messenger</button>
-      <button data-tab="rewards">Phiếu bé ngoan</button>
-      <button data-tab="admin" id="adminTab" class="hidden">Quản trị</button>
+      <button data-tab="feed">🏠 Bảng tin</button>
+      <button data-tab="friends">👥 Bạn bè</button>
+      <button data-tab="chat">💬 Messenger</button>
+      <button data-tab="rewards">⭐ Phiếu bé ngoan</button>
+      <button data-tab="admin" id="adminTab" class="hidden">🛡️ Quản trị</button>
     </aside>
     
     <section class="content">
       <!-- Bảng tin -->
       <div id="feed" class="panel view">
         <h2>Bảng tin</h2>
-        <textarea id="postText" placeholder="Bạn đang nghĩ gì?"></textarea>
-        <button id="postBtn">Đăng bài</button>
+        <div class="post-box">
+          <textarea id="postText" placeholder="Bạn đang nghĩ gì thế?"></textarea>
+          <button id="postBtn">Đăng bài</button>
+        </div>
         <div id="posts"></div>
       </div>
       
-      <!-- Bạn bè & Tìm kiếm theo tên -->
+      <!-- Bạn bè chuẩn Facebook -->
       <div id="friends" class="panel view hidden">
         <h2>Bạn bè</h2>
-        <h3>Tìm kiếm bạn bè</h3>
-        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-          <input id="searchFriendInput" placeholder="Nhập tên hiển thị..." style="margin-bottom: 0;">
-          <button id="searchFriendBtn" style="padding: 0 16px; background: #1877f2; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Tìm</button>
+        <div class="friend-search-box">
+          <input id="searchFriendInput" placeholder="Nhập tên hiển thị để tìm bạn...">
+          <button id="searchFriendBtn">Tìm kiếm</button>
         </div>
-        <div id="searchResults" style="margin-bottom: 20px;"></div>
+        <div id="searchResults" class="friend-list-container"></div>
 
         <h3>Lời mời kết bạn</h3>
-        <div id="requests" style="margin-bottom: 20px;"></div>
+        <div id="requests" class="friend-list-container"></div>
 
         <h3>Danh sách bạn bè</h3>
-        <div id="myFriends"></div>
+        <div id="myFriends" class="friend-list-container"></div>
       </div>
       
-      <!-- Giao diện Chat Messenger đầy đủ tính năng -->
+      <!-- Messenger chuẩn -->
       <div id="chat" class="panel view hidden">
-        <h2>Tin nhắn Messenger</h2>
+        <h2>Messenger</h2>
         <div class="chatgrid">
           <div id="chatFriends" class="chat-friends-list">Chọn bạn để chat...</div>
           <div class="chat-box-container">
@@ -84,7 +84,7 @@
             <div class="send">
               <input type="file" id="imageInput" accept="image/*" style="display: none;">
               <button id="attachBtn" title="Gửi ảnh">📷</button>
-              <input id="message" type="text" placeholder="Nhập tin nhắn...">
+              <input id="message" type="text" placeholder="Aa...">
               <button id="sendBtn">Gửi</button>
             </div>
           </div>
@@ -93,21 +93,24 @@
       
       <!-- Phiếu bé ngoan -->
       <div id="rewards" class="panel view hidden">
-        <h2>Phiếu bé ngoan</h2>
-        <p>Phiếu được admin phát. Tổng số phiếu tích lũy của bạn:</p>
-        <div class="stat"><b id="weekCount">0</b><span>Phiếu hiện có</span></div>
+        <h2>Phiếu bé ngoan của tôi</h2>
+        <div class="stat"><b id="weekCount">0</b><span>Tổng số phiếu đã nhận</span></div>
         <h3>Lịch sử nhận phiếu</h3>
         <div id="rewardHistory"></div>
       </div>
       
       <!-- Quản trị viên -->
       <div id="admin" class="panel view hidden">
-        <h2>Quản trị viên</h2>
-        <p>Phát phiếu bé ngoan cho người dùng.</p>
-        <select id="awardUser"></select>
-        <input id="awardReason" placeholder="Lý do / lời khen (không bắt buộc)">
-        <button id="awardBtn">Phát 1 phiếu</button>
-        <small id="adminMsg"></small>
+        <h2>Khu vực Quản trị viên</h2>
+        <p>Phát phiếu bé ngoan cho thành viên.</p>
+        <div class="admin-form">
+          <label>Chọn thành viên:</label>
+          <select id="awardUser"></select>
+          <label>Lý do / Lời khen:</label>
+          <input id="awardReason" placeholder="Ví dụ: Hoạt động tích cực tuần qua">
+          <button id="awardBtn">Phát 1 phiếu ngay</button>
+          <small id="adminMsg"></small>
+        </div>
       </div>
     </section>
   </main>
