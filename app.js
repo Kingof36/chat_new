@@ -1,5 +1,5 @@
 // Dán Link Web App Google Apps Script của bạn vào đây (kết thúc bằng /exec)
-const API_URL = "https://script.google.com/macros/s/AKfycbyYluGb6pYgBTUdMq_3GvL6NAkk0JHUxpU2fdeo15tCGruZiwY2_npBpB1CqnaSdztH/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbymOnvkF93anTrm54WRAdJhgQQeoBG4xhZAKQB-TKZ_tHwBL_8DDBuN0rOE69CF1Ypy/exec";
 
 let currentUser = null;
 try {
