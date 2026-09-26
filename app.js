@@ -362,47 +362,25 @@ async function loadMessages() {
   } catch (e) {}
 }
 
-// HÀM GỬI TIN NHẮN ĐÃ ĐƯỢC TÍCH HỢP OPTIMISTIC UPDATE
 async function sendMessage() {
   const textInput = document.getElementById('message');
   const text = textInput.value.trim();
   if ((!text && !base64Image) || !currentChatUser) return;
 
-  const tempText = text;
-  const tempImage = base64Image;
-  const tempTime = new Date().toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit' });
+  await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'sendMessage',
+      from: currentUser.email,
+      to: currentChatUser,
+      text: text,
+      image: base64Image
+    })
+  });
 
   textInput.value = '';
   base64Image = "";
-
-  const msgContainer = document.getElementById('messages');
-  const tempBubble = document.createElement('div');
-  tempBubble.className = 'message-bubble sent';
-  tempBubble.innerHTML = `
-    <p>${tempText}</p>
-    ${tempImage ? `<img src="${tempImage}" style="max-width: 200px; border-radius: 8px; margin-top: 5px; display: block;" />` : ''}
-    <small>${tempTime} (đang gửi...)</small>
-  `;
-  msgContainer.appendChild(tempBubble);
-  msgContainer.scrollTop = msgContainer.scrollHeight;
-
-  try {
-    await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'sendMessage',
-        from: currentUser.email,
-        to: currentChatUser,
-        text: tempText,
-        image: tempImage
-      })
-    });
-    loadMessages();
-  } catch (e) {
-    console.error("Lỗi gửi tin nhắn:", e);
-    alert('Không thể gửi tin nhắn, vui lòng kiểm tra lại kết nối!');
-    loadMessages();
-  }
+  loadMessages();
 }
 
 async function checkRewardsNotification() {
