@@ -21,7 +21,6 @@ function initApp() {
     showAuthScreen();
   }
 
-  // Auth
   const regBtn = document.getElementById('register');
   const logBtn = document.getElementById('login');
   const logOutBtn = document.getElementById('logout');
@@ -29,11 +28,9 @@ function initApp() {
   if (logBtn) logBtn.addEventListener('click', handleLogin);
   if (logOutBtn) logOutBtn.addEventListener('click', handleLogout);
 
-  // Post
   const postBtn = document.getElementById('postBtn');
   if (postBtn) postBtn.addEventListener('click', handleCreatePost);
 
-  // Chat
   const sendBtn = document.getElementById('sendBtn');
   const attachBtn = document.getElementById('attachBtn');
   const imageInput = document.getElementById('imageInput');
@@ -43,7 +40,6 @@ function initApp() {
     imageInput.addEventListener('change', handleImageUpload);
   }
 
-  // Friends
   const searchBtn = document.getElementById('searchFriendBtn');
   if (searchBtn) searchBtn.addEventListener('click', handleSearchFriends);
   const searchInput = document.getElementById('searchFriendInput');
@@ -53,11 +49,21 @@ function initApp() {
     });
   }
 
-  // Admin
   const awardBtn = document.getElementById('awardBtn');
   if (awardBtn) awardBtn.addEventListener('click', handleAwardBadge);
 
-  // Modal
+  const resetBtn = document.getElementById('resetRewardsBtn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', async () => {
+      if (confirm('Bạn có chắc chắn muốn reset toàn bộ phiếu bé ngoan của tuần này không?')) {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'resetRewards' }) });
+        const result = await res.json();
+        alert(result.message || 'Đã reset thành công!');
+        loadRewards();
+      }
+    });
+  }
+
   const closeModal = document.getElementById('closeModal');
   if (closeModal) {
     closeModal.addEventListener('click', () => {
@@ -65,7 +71,6 @@ function initApp() {
     });
   }
 
-  // Tabs
   document.querySelectorAll('.nav button[data-tab]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       switchTab(e.target.getAttribute('data-tab'));
@@ -79,7 +84,7 @@ function showMainApp() {
   document.getElementById('logout').classList.remove('hidden');
   document.getElementById('who').textContent = `Xin chào, ${currentUser.name || currentUser.email}`;
   
-  if (currentUser.email === 'lengocnhu1805@gmail.com' || currentUser.email === 'admin') {
+  if (currentUser.email === 'admin@friendbook.com' || currentUser.email === 'admin') {
     document.getElementById('adminTab').classList.remove('hidden');
     loadAdminUsers();
   }
@@ -173,7 +178,6 @@ function switchTab(tabName) {
   if (tabName === 'friends') loadFriendsData();
 }
 
-// Bảng tin
 async function loadFeed() {
   const container = document.getElementById('posts');
   if (!container) return;
@@ -201,7 +205,6 @@ async function handleCreatePost() {
   loadFeed();
 }
 
-// Kết bạn & Tìm kiếm theo tên hiển thị
 function loadFriendsData() {
   loadFriendRequests();
   loadMyFriends();
@@ -306,7 +309,6 @@ async function loadMyFriends() {
   } catch (e) {}
 }
 
-// Messenger & Gửi ảnh
 function handleImageUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -337,7 +339,7 @@ async function loadChatUsers() {
 
 function selectChatUser(email, name) {
   currentChatUser = email;
-  document.getElementById('chatTitlesurname') || (document.getElementById('chatTitle').textContent = `Đang chat với: ${name}`);
+  document.getElementById('chatTitle').textContent = `Đang chat với: ${name}`;
   loadMessages();
 }
 
@@ -360,21 +362,19 @@ async function loadMessages() {
   } catch (e) {}
 }
 
+// HÀM GỬI TIN NHẮN ĐÃ ĐƯỢC TÍCH HỢP OPTIMISTIC UPDATE
 async function sendMessage() {
   const textInput = document.getElementById('message');
   const text = textInput.value.trim();
   if ((!text && !base64Image) || !currentChatUser) return;
 
-  // 1. LƯU LẠI GIÁ TRỊ TẠM THỜI ĐỂ HIỂN THỊ NGAY LẬP TỨC
   const tempText = text;
   const tempImage = base64Image;
   const tempTime = new Date().toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit' });
 
-  // 2. XÓA Ô NHẬP LIỆU NGAY LẬP TỨC CHO MƯỢT MÀ
   textInput.value = '';
   base64Image = "";
 
-  // 3. TẠO MỘT BONG BÓNG TIN NHẮN GIẢ LẬP (OPTIMISTIC UI) RỒI ĐẨY VÀO KHUNG CHAT
   const msgContainer = document.getElementById('messages');
   const tempBubble = document.createElement('div');
   tempBubble.className = 'message-bubble sent';
@@ -386,7 +386,6 @@ async function sendMessage() {
   msgContainer.appendChild(tempBubble);
   msgContainer.scrollTop = msgContainer.scrollHeight;
 
-  // 4. GỬI DỮ LIỆU NGẦM LÊN SERVER GOOGLE APPS SCRIPT
   try {
     await fetch(API_URL, {
       method: 'POST',
@@ -398,23 +397,14 @@ async function sendMessage() {
         image: tempImage
       })
     });
-    
-    // 5. SAU KHI GỬI THÀNH CÔNG, TẢI LẠI ĐỒNG BỘ CHÍNH XÁC TỪ SERVER
     loadMessages();
   } catch (e) {
     console.error("Lỗi gửi tin nhắn:", e);
     alert('Không thể gửi tin nhắn, vui lòng kiểm tra lại kết nối!');
-    loadMessages(); // Load lại để đồng bộ trạng thái nếu lỗi
+    loadMessages();
   }
-})
-  });
-
-  textInput.value = '';
-  base64Image = "";
-  loadMessages();
 }
 
-// Phiếu bé ngoan & Thông báo
 async function checkRewardsNotification() {
   try {
     const res = await fetch(`${API_URL}?action=getRewards&email=${encodeURIComponent(currentUser.email)}`);
@@ -442,7 +432,6 @@ async function loadRewards() {
   } catch (e) {}
 }
 
-// Quản trị viên
 async function loadAdminUsers() {
   const select = document.getElementById('awardUser');
   if (!select) return;
