@@ -14,6 +14,15 @@
     <button id="logout" class="hidden">Đăng xuất</button>
   </header>
   
+  <!-- Popup thông báo nhận phiếu bé ngoan -->
+  <div id="badgeModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>🎉 Chúc mừng!</h3>
+      <p id="badgeMsg">Bạn vừa nhận được một Phiếu bé ngoan mới từ Quản trị viên!</p>
+      <button id="closeModal">Tuyệt vời</button>
+    </div>
+  </div>
+
   <main id="auth" class="auth">
     <section class="panel">
       <h1>Chào mừng bạn!</h1>
@@ -33,7 +42,7 @@
     <aside class="panel nav">
       <button data-tab="feed">Bảng tin</button>
       <button data-tab="friends">Bạn bè</button>
-      <button data-tab="chat">Tin nhắn</button>
+      <button data-tab="chat">Tin nhắn Messenger</button>
       <button data-tab="rewards">Phiếu bé ngoan</button>
       <button data-tab="admin" id="adminTab" class="hidden">Quản trị</button>
     </aside>
@@ -55,14 +64,18 @@
         <div id="myFriends"></div>
       </div>
       
+      <!-- Giao diện Chat kiểu Messenger có hỗ trợ gửi ảnh -->
       <div id="chat" class="panel view hidden">
-        <h2>Tin nhắn</h2>
+        <h2>Tin nhắn Messenger</h2>
         <div class="chatgrid">
-          <div id="chatFriends"></div>
-          <div>
-            <div id="messages" class="messages">Chọn một người bạn để nhắn tin.</div>
+          <div id="chatFriends" class="chat-friends-list">Chọn bạn để chat...</div>
+          <div class="chat-box-container">
+            <div id="chatTitle" class="chat-title">Chưa chọn cuộc trò chuyện</div>
+            <div id="messages" class="messages">Chọn một người bạn bên trái để bắt đầu nhắn tin.</div>
             <div class="send">
-              <input id="message" placeholder="Viết tin nhắn...">
+              <input type="file" id="imageInput" accept="image/*" style="display: none;">
+              <button id="attachBtn" title="Gửi ảnh">📷</button>
+              <input id="message" placeholder="Nhập tin nhắn...">
               <button id="sendBtn">Gửi</button>
             </div>
           </div>
@@ -71,10 +84,8 @@
       
       <div id="rewards" class="panel view hidden">
         <h2>Phiếu bé ngoan</h2>
-        <p>Phiếu được admin phát. Tổng số phiếu tự tính theo tuần (Thứ Hai–Chủ Nhật).</p>
+        <p>Phiếu được admin phát. Tổng số phiếu tự tính theo tuần.</p>
         <div class="stat"><b id="weekCount">0</b><span>Phiếu trong tuần này</span></div>
-        <p id="weekRange"></p>
-        <h3>Lịch sử phiếu</h3>
         <div id="rewardHistory"></div>
       </div>
       
@@ -85,8 +96,6 @@
         <input id="awardReason" placeholder="Lý do / lời khen (không bắt buộc)">
         <button id="awardBtn">Phát 1 phiếu</button>
         <small id="adminMsg"></small>
-        <h3>Thống kê tuần hiện tại</h3>
-        <div id="adminStats"></div>
       </div>
     </section>
   </main>
