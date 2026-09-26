@@ -365,15 +365,48 @@ async function sendMessage() {
   const text = textInput.value.trim();
   if ((!text && !base64Image) || !currentChatUser) return;
 
-  await fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({
-      action: 'sendMessage',
-      from: currentUser.email,
-      to: currentChatUser,
-      text: text,
-      image: base64Image
-    })
+  // 1. LƯU LẠI GIÁ TRỊ TẠM THỜI ĐỂ HIỂN THỊ NGAY LẬP TỨC
+  const tempText = text;
+  const tempImage = base64Image;
+  const tempTime = new Date().toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit' });
+
+  // 2. XÓA Ô NHẬP LIỆU NGAY LẬP TỨC CHO MƯỢT MÀ
+  textInput.value = '';
+  base64Image = "";
+
+  // 3. TẠO MỘT BONG BÓNG TIN NHẮN GIẢ LẬP (OPTIMISTIC UI) RỒI ĐẨY VÀO KHUNG CHAT
+  const msgContainer = document.getElementById('messages');
+  const tempBubble = document.createElement('div');
+  tempBubble.className = 'message-bubble sent';
+  tempBubble.innerHTML = `
+    <p>${tempText}</p>
+    ${tempImage ? `<img src="${tempImage}" style="max-width: 200px; border-radius: 8px; margin-top: 5px; display: block;" />` : ''}
+    <small>${tempTime} (đang gửi...)</small>
+  `;
+  msgContainer.appendChild(tempBubble);
+  msgContainer.scrollTop = msgContainer.scrollHeight;
+
+  // 4. GỬI DỮ LIỆU NGẦM LÊN SERVER GOOGLE APPS SCRIPT
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'sendMessage',
+        from: currentUser.email,
+        to: currentChatUser,
+        text: tempText,
+        image: tempImage
+      })
+    });
+    
+    // 5. SAU KHI GỬI THÀNH CÔNG, TẢI LẠI ĐỒNG BỘ CHÍNH XÁC TỪ SERVER
+    loadMessages();
+  } catch (e) {
+    console.error("Lỗi gửi tin nhắn:", e);
+    alert('Không thể gửi tin nhắn, vui lòng kiểm tra lại kết nối!');
+    loadMessages(); // Load lại để đồng bộ trạng thái nếu lỗi
+  }
+})
   });
 
   textInput.value = '';
