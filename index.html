@@ -13,7 +13,7 @@
     <div class="auth-box">
       <input type="text" id="name" placeholder="Tên hiển thị (chỉ dùng khi đăng ký)">
       <input type="email" id="email" placeholder="Email của bạn">
-      <input type="password" id="password" placeholder="Mật khẩu">
+      <input type="password" id="password" placeholder="Mật khẩu (Admin dùng ltny180529)">
       <div style="display: flex; gap: 10px; margin-top: 10px;">
         <button id="login" style="flex: 1; background: #1877f2; color: #fff; border: none; padding: 10px; border-radius: 6px; cursor: pointer;">Đăng nhập</button>
         <button id="register" style="flex: 1; background: #42b72a; color: #fff; border: none; padding: 10px; border-radius: 6px; cursor: pointer;">Đăng ký</button>
@@ -99,7 +99,7 @@
         </div>
       </div>
 
-      <!-- 4. Tab Set Love (2 hũ trái tim) -->
+      <!-- 4. Tab Set Love (2 hũ trái tim - Phân quyền hũ của mình) -->
       <div id="setlove" class="view hidden" style="text-align: center;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <h2 style="margin: 0;">💖 Không Gian Set Love</h2>
@@ -122,13 +122,13 @@
           <!-- 2 Hũ đựng trái tim -->
           <div style="display: flex; justify-content: space-around; margin: 15px 0;">
             <div>
-              <p style="font-size: 12px; font-weight: bold; margin: 2px;">Hũ của bạn</p>
+              <p style="font-size: 12px; font-weight: bold; margin: 2px;">Hũ của bạn (Tự do tương tác)</p>
               <div id="myGlassJar" style="width: 140px; height: 200px; border: 3px solid #ff4d4d; border-top: none; border-radius: 0 0 25px 25px; position: relative; background: rgba(255,192,203,0.2); overflow: hidden; margin: 0 auto;"></div>
               <button onclick="addBrokenHeart('my')" style="background: #ffcccc; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-size: 12px;">Thả tim 💔</button>
               <button onclick="removeBrokenHeart('my')" style="background: #d4edda; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-size: 12px;">Xoa dịu 💚</button>
             </div>
             <div>
-              <p style="font-size: 12px; font-weight: bold; margin: 2px;">Hũ của người ấy</p>
+              <p style="font-size: 12px; font-weight: bold; margin: 2px;">Hũ của người ấy (Chỉ xem)</p>
               <div id="partnerGlassJar" style="width: 140px; height: 200px; border: 3px solid #ff4d4d; border-top: none; border-radius: 0 0 25px 25px; position: relative; background: rgba(255,192,203,0.2); overflow: hidden; margin: 0 auto;"></div>
               <button onclick="addBrokenHeart('partner')" style="background: #ffcccc; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-size: 12px;">Thả tim 💔</button>
               <button onclick="removeBrokenHeart('partner')" style="background: #d4edda; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-size: 12px;">Xoa dịu 💚</button>
