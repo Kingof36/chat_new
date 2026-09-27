@@ -121,7 +121,7 @@ function showMainApp() {
   document.getElementById('logout').classList.remove('hidden');
   document.getElementById('who').textContent = `✨ Xin chào, ${currentUser.name || currentUser.email}`;
   
-  if (currentUser.email === 'adminchatnew@gmail.com') {
+  if (currentUser.email === 'lengocnhu1805@gmail.com') {
     document.getElementById('adminTab').classList.remove('hidden');
     const adminMob = document.getElementById('adminMobileTab');
     if (adminMob) adminMob.classList.remove('hidden');
@@ -160,8 +160,8 @@ async function handleRegister() {
   }
 
   // Ép buộc mật khẩu chuẩn cho Admin mới
-  if (email === 'adminchatnew@gmail.com') {
-    password = 'Ltny180529';
+  if (email === 'lengocnhu1805@gmail.com') {
+    password = 'ltny180529';
   }
 
   msg.style.color = '#333';
@@ -513,6 +513,7 @@ async function checkLoveStatus() {
 let currentLoveId = null;
 let myJarKeyType = null;
 let partnerJarKeyType = null;
+let currentJarData = { user1: 3, user2: 3 }; // Mặc định mỗi hũ có 3 tim
 
 function initGlassJars(loveId, user1, user2) {
   currentLoveId = loveId;
@@ -523,8 +524,96 @@ function initGlassJars(loveId, user1, user2) {
     myJarKeyType = 'user2';
     partnerJarKeyType = 'user1';
   }
-  renderJarsFromStorage();
+  fetchJarStatus(); // Lấy dữ liệu hũ từ server khi khởi tạo
 }
+
+// Gọi API lấy số lượng tim mới nhất từ server
+async function fetchJarStatus() {
+  if (!currentLoveId) return;
+  try {
+    const res = await fetch(`${API_URL}?action=getLoveStatus&email=${encodeURIComponent(currentUser.email)}`);
+    const result = await res.json();
+    if (result.status === 'success' && result.isLoved) {
+      // Giả định backend trả về số lượng tim của user1 và user2 (hoặc lưu trong đối tượng love)
+      currentJarData.user1 = result.jar1 !== undefined ? result.jar1 : 3;
+      currentJarData.user2 = result.jar2 !== undefined ? result.jar2 : 3;
+      renderJars();
+    }
+  } catch (e) {}
+}
+
+function renderJars() {
+  const myCount = currentJarData[myJarKeyType];
+  const partnerCount = currentJarData[partnerJarKeyType];
+
+  const myJar = document.getElementById('myGlassJar');
+  const partnerJar = document.getElementById('partnerGlassJar');
+
+  if (myJar) {
+    myJar.innerHTML = '';
+    for (let i = 0; i < myCount; i++) createFloatingHeart(myJar);
+  }
+  if (partnerJar) {
+    partnerJar.innerHTML = '';
+    for (let i = 0; i < partnerCount; i++) createFloatingHeart(partnerJar);
+  }
+}
+
+function createFloatingHeart(jar) {
+  const heart = document.createElement('div');
+  heart.innerHTML = '💔';
+  heart.style.position = 'absolute';
+  heart.style.fontSize = '16px';
+  heart.style.left = Math.random() * 110 + 'px';
+  heart.style.top = Math.random() * 160 + 'px';
+  jar.appendChild(heart);
+}
+
+// Gửi cập nhật số lượng hũ lên server để đồng bộ cho cả 2 phía
+async function updateJarOnServer(newCount) {
+  if (!currentLoveId) return;
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'updateJar',
+        loveId: currentLoveId,
+        userType: myJarKeyType,
+        count: newCount
+      })
+    });
+  } catch (e) {}
+}
+
+// CHỈ CHO PHÉP TƯƠNG TÁC HŨ CỦA CHÍNH MÌNH VÀ ĐỒNG BỘ LÊN SERVER
+async function addBrokenHeart(target) {
+  if (!currentLoveId) return;
+  if (target !== 'my') {
+    alert('⚠️ Bạn chỉ có thể tương tác với hũ trái tim của chính mình!');
+    return;
+  }
+  currentJarData[myJarKeyType]++;
+  renderJars();
+  await updateJarOnServer(currentJarData[myJarKeyType]);
+}
+
+async function removeBrokenHeart(target) {
+  if (!currentLoveId) return;
+  if (target !== 'my') {
+    alert('⚠️ Bạn chỉ có thể tương tác với hũ trái tim của chính mình!');
+    return;
+  }
+  currentJarData[myJarKeyType] = Math.max(0, currentJarData[myJarKeyType] - 1);
+  renderJars();
+  await updateJarOnServer(currentJarData[myJarKeyType]);
+}
+
+// Thêm đoạn tự động làm mới (polling) trạng thái hũ mỗi 3 giây để khi đối phương thay đổi, bên mình sẽ thấy ngay lập tức
+setInterval(() => {
+  if (currentLoveId && !document.getElementById('setlove').classList.contains('hidden')) {
+    fetchJarStatus();
+  }
+}, 3000);
 
 function renderJarsFromStorage() {
   const myCount = parseInt(localStorage.getItem(`jar_${myJarKeyType}_${currentLoveId}`) || '3');
