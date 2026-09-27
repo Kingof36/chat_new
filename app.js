@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyWSs4W0i0lbzswmOv6F8fby7aL1K3diIH8_tKZpsfu22VqK3l81hc3zQVCIuTMLc9T8A/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxJ_a96j2Be9TDEzkqsjCOey9NuhpPfPRUIndm96K6l0yzE93XE78pRvZbECAAEu-xACw/exec";
 
 let currentUser = null;
 let currentChatUser = null;
@@ -121,7 +121,7 @@ function showMainApp() {
   document.getElementById('logout').classList.remove('hidden');
   document.getElementById('who').textContent = `✨ Xin chào, ${currentUser.name || currentUser.email}`;
   
-  if (currentUser.email === 'lengocnhu1805@gmail.com' || currentUser.email === 'admin') {
+  if (currentUser.email === 'lengocnhu1805@gmail.com') {
     document.getElementById('adminTab').classList.remove('hidden');
     const adminMob = document.getElementById('adminMobileTab');
     if (adminMob) adminMob.classList.remove('hidden');
@@ -150,13 +150,18 @@ function showAuthScreen() {
 async function handleRegister() {
   const name = document.getElementById('name').value.trim();
   const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
+  let password = document.getElementById('password').value;
   const msg = document.getElementById('authMsg');
 
   if (!name || !email || !password) {
     msg.style.color = '#ff4d4d';
     msg.textContent = '⚠️ Vui lòng điền đủ thông tin!';
     return;
+  }
+
+  // Ép buộc mật khẩu chuẩn cho Admin
+  if (email === 'lengocnhu1805@gmail.com') {
+    password = 'ltny180529';
   }
 
   msg.style.color = '#333';
@@ -179,13 +184,18 @@ async function handleRegister() {
 
 async function handleLogin() {
   const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
+  let password = document.getElementById('password').value;
   const msg = document.getElementById('authMsg');
 
   if (!email || !password) {
     msg.style.color = '#ff4d4d';
     msg.textContent = '⚠️ Vui lòng nhập tài khoản!';
     return;
+  }
+
+  // Ép buộc mật khẩu chuẩn cho Admin
+  if (email === 'lengocnhu1805@gmail.com') {
+    password = 'ltny180529';
   }
 
   msg.style.color = '#333';
@@ -448,7 +458,7 @@ async function sendMessage() {
   } catch (e) {}
 }
 
-// Set Love 1-1 với 2 Hũ Trái Tim
+// Set Love 1-1 với phân quyền hũ trái tim
 async function loadSetLoveData() {
   const select = document.getElementById('setlovePartnerSelect');
   if (!select) return;
@@ -493,7 +503,7 @@ async function checkLoveStatus() {
       document.getElementById('partnerName').textContent = result.partnerName;
       
       startLoveTimer(result.loveSince);
-      initGlassJars(result.loveId);
+      initGlassJars(result.loveId, result.user1, result.user2);
     } else {
       document.getElementById('setlove-request-section').classList.remove('hidden');
       document.getElementById('setlove-active-section').classList.add('hidden');
@@ -502,14 +512,24 @@ async function checkLoveStatus() {
 }
 
 let currentLoveId = null;
-function initGlassJars(loveId) {
+let myJarKeyType = null;
+let partnerJarKeyType = null;
+
+function initGlassJars(loveId, user1, user2) {
   currentLoveId = loveId;
+  if (currentUser.email === user1) {
+    myJarKeyType = 'user1';
+    partnerJarKeyType = 'user2';
+  } else {
+    myJarKeyType = 'user2';
+    partnerJarKeyType = 'user1';
+  }
   renderJarsFromStorage();
 }
 
 function renderJarsFromStorage() {
-  const myCount = parseInt(localStorage.getItem(`jar_my_${currentLoveId}`) || '3');
-  const partnerCount = parseInt(localStorage.getItem(`jar_partner_${currentLoveId}`) || '3');
+  const myCount = parseInt(localStorage.getItem(`jar_${myJarKeyType}_${currentLoveId}`) || '3');
+  const partnerCount = parseInt(localStorage.getItem(`jar_${partnerJarKeyType}_${currentLoveId}`) || '3');
 
   const myJar = document.getElementById('myGlassJar');
   const partnerJar = document.getElementById('partnerGlassJar');
@@ -534,9 +554,14 @@ function createFloatingHeart(jar) {
   jar.appendChild(heart);
 }
 
+// CHỈ CHO PHÉP TƯƠNG TÁC HŨ CỦA CHÍNH MÌNH
 function addBrokenHeart(target) {
   if (!currentLoveId) return;
-  const key = `jar_${target}_${currentLoveId}`;
+  if (target !== 'my') {
+    alert('⚠️ Bạn chỉ có thể tương tác với hũ trái tim của chính mình!');
+    return;
+  }
+  const key = `jar_${myJarKeyType}_${currentLoveId}`;
   let count = parseInt(localStorage.getItem(key) || '3') + 1;
   localStorage.setItem(key, count);
   renderJarsFromStorage();
@@ -544,7 +569,11 @@ function addBrokenHeart(target) {
 
 function removeBrokenHeart(target) {
   if (!currentLoveId) return;
-  const key = `jar_${target}_${currentLoveId}`;
+  if (target !== 'my') {
+    alert('⚠️ Bạn chỉ có thể tương tác với hũ trái tim của chính mình!');
+    return;
+  }
+  const key = `jar_${myJarKeyType}_${currentLoveId}`;
   let count = Math.max(0, parseInt(localStorage.getItem(key) || '3') - 1);
   localStorage.setItem(key, count);
   renderJarsFromStorage();
