@@ -2,10 +2,11 @@ const API_URL = "https://script.google.com/macros/s/AKfycbz2xTSzq_mzD2Le5HEmhWQm
 
 let currentUser = null;
 let currentChatUser = null;
-let base64Media = ""; // Hỗ trợ lưu trữ ảnh, video hoặc voice dưới dạng base64
+let base64Media = ""; // Lưu trữ Ảnh, Video hoặc Voice dưới dạng base64
 let mediaType = "";  // 'image', 'video', hoặc 'voice'
 let mediaRecorder = null;
 let audioChunks = [];
+let brokenHeartsCount = 3; // Số lượng trái tim rạn nứt khởi đầu trong lọ thủy tinh
 
 try {
   currentUser = JSON.parse(localStorage.getItem('friendbook_user')) || null;
@@ -36,14 +37,12 @@ function initApp() {
   const postBtn = document.getElementById('postBtn');
   if (postBtn) postBtn.addEventListener('click', handleCreatePost);
 
-  // Chat & Media (Ảnh, Video, Voice)
+  // Chat & Media (Ảnh, Video, Voice) - Đã sửa lỗi kết nối sự kiện chuẩn xác
   const sendBtn = document.getElementById('sendBtn');
   const attachImageBtn = document.getElementById('attachImageBtn');
   const imageInput = document.getElementById('imageInput');
-  
   const attachVideoBtn = document.getElementById('attachVideoBtn');
   const videoInput = document.getElementById('videoInput');
-
   const recordVoiceBtn = document.getElementById('recordVoiceBtn');
 
   if (sendBtn) sendBtn.addEventListener('click', sendMessage);
@@ -72,7 +71,13 @@ function initApp() {
     });
   }
 
-  // Admin - Phiếu Bé Ngoan & Bé Hư
+  // Set Love
+  const sendLoveBtn = document.getElementById('sendSetLoveBtn');
+  if (sendLoveBtn) {
+    sendLoveBtn.addEventListener('click', handleSendSetLoveRequest);
+  }
+
+  // Admin - Phát Phiếu Bé Ngoan & Bé Hư
   const awardBtn = document.getElementById('awardBtn');
   if (awardBtn) awardBtn.addEventListener('click', () => handleAwardBadge('ngoan'));
 
@@ -193,6 +198,7 @@ function switchTab(tabName) {
   if (tabName === 'chat') loadChatUsers();
   if (tabName === 'rewards') loadRewards();
   if (tabName === 'friends') loadFriendsData();
+  if (tabName === 'setlove') loadSetLoveData();
 }
 
 // Bảng tin với Optimistic Update (Tốc độ 0s)
@@ -222,7 +228,6 @@ async function handleCreatePost() {
 
   contentInput.value = '';
 
-  // Optimistic UI hiển thị ngay lập tức
   const container = document.getElementById('posts');
   const tempCard = document.createElement('div');
   tempCard.className = 'post-card';
@@ -512,6 +517,140 @@ async function sendMessage() {
     alert('Không thể gửi tin nhắn!');
     loadMessages();
   }
+}
+
+// ================= TÍNH NĂNG SET LOVE & LỌ THỦY TINH =================
+async function loadSetLoveData() {
+  const select = document.getElementById('setlovePartnerSelect');
+  if (!select) return;
+  
+  try {
+    const res = await fetch(`${API_URL}?action=getMyFriends&email=${encodeURIComponent(currentUser.email)}`);
+    const result = await res.json();
+    if (result.status === 'success') {
+      select.innerHTML = result.friends.map(u => `<option value="${u.email}">${u.name} (${u.email})</option>`).join('');
+    }
+  } catch (e) {}
+
+  checkLoveStatus();
+}
+
+async function handleSendSetLoveRequest() {
+  const partnerEmail = document.getElementById('setlovePartnerSelect').value;
+  if (!partnerEmail) return;
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'sendSetLove', from: currentUser.email, to: partnerEmail })
+    });
+    const result = await res.json();
+    alert(result.message || '💖 Đã gửi lời mời Set Love!');
+  } catch (e) {
+    alert('Lỗi kết nối khi gửi lời mời Set Love.');
+  }
+}
+
+async function checkLoveStatus() {
+  try {
+    const res = await fetch(`${API_URL}?action=getLoveStatus&email=${encodeURIComponent(currentUser.email)}`);
+    const result = await res.json();
+    if (result.status === 'success' && result.isLoved) {
+      document.getElementById('setlove-request-section').classList.add('hidden');
+      document.getElementById('setlove-active-section').classList.remove('hidden');
+      document.getElementById('partnerName').textContent = result.partnerName;
+      
+      startLoveTimer(result.loveSince);
+      initGlassJarAnimation();
+    } else {
+      document.getElementById('setlove-request-section').classList.remove('hidden');
+      document.getElementById('setlove-active-section').classList.add('hidden');
+    }
+  } catch (e) {}
+}
+
+function startLoveTimer(startDateStr) {
+  const startDate = new Date(startDateStr || Date.now());
+  setInterval(() => {
+    const now = new Date();
+    const diff = now - startDate;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / 1000 / 60) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    const timerEl = document.getElementById('loveTimer');
+    if (timerEl) {
+      timerEl.textContent = `⏳ Đã yêu nhau: ${days} ngày ${hours} giờ ${minutes} phút ${seconds} giây`;
+    }
+  }, 1000);
+}
+
+// Hiệu ứng lọ thủy tinh với các trái tim rạn nứt chuyển động hỗn loạn như phân tử khí
+function initGlassJarAnimation() {
+  const jar = document.getElementById('glassJar');
+  if (!jar) return;
+  
+  if (jar.children.length === 0) {
+    for (let i = 0; i < brokenHeartsCount; i++) {
+      createFloatingHeartElement(jar);
+    }
+  }
+}
+
+function createFloatingHeartElement(jar) {
+  const heart = document.createElement('div');
+  heart.innerHTML = '💔';
+  heart.style.position = 'absolute';
+  heart.style.fontSize = '18px';
+  
+  let posX = Math.random() * 160;
+  let posY = Math.random() * 220;
+  let speedX = (Math.random() - 0.5) * 2;
+  let speedY = (Math.random() - 0.5) * 2;
+
+  heart.style.left = posX + 'px';
+  heart.style.top = posY + 'px';
+  jar.appendChild(heart);
+
+  setInterval(() => {
+    posX += speedX;
+    posY += speedY;
+
+    if (posX <= 0 || posX >= 170) speedX *= -1;
+    if (posY <= 0 || posY >= 230) speedY *= -1;
+
+    heart.style.left = posX + 'px';
+    heart.style.top = posY + 'px';
+  }, 30);
+}
+
+// Người con gái (hoặc Admin) thả tim rạn nứt vào khi buồn
+function addBrokenHeart() {
+  const jar = document.getElementById('glassJar');
+  if (jar) {
+    createFloatingHeartElement(jar);
+    brokenHeartsCount++;
+    alert('💔 Đã thả 1 trái tim rạn nứt vào lọ thủy tinh.');
+  }
+}
+
+// Lấy ra 1 trái tim rạn nứt khi vui hơn
+function removeBrokenHeart() {
+  const jar = document.getElementById('glassJar');
+  if (jar && jar.lastChild) {
+    jar.removeChild(jar.lastChild);
+    brokenHeartsCount = Math.max(0, brokenHeartsCount - 1);
+    alert('💚 Đã lấy bớt 1 trái tim rạn nứt ra khỏi lọ. Vui lên nhé!');
+  }
+}
+
+async function sendSetLoveMessage() {
+  const input = document.getElementById('setloveMsgInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  // Tích hợp tin nhắn Set Love với tốc độ 0s tại đây nếu muốn
 }
 
 // Quản lý Phiếu Bé Ngoan & Phiếu Bé Hư
