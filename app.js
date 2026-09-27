@@ -121,7 +121,7 @@ function showMainApp() {
   document.getElementById('logout').classList.remove('hidden');
   document.getElementById('who').textContent = `✨ Xin chào, ${currentUser.name || currentUser.email}`;
   
-  if (currentUser.email === 'lengocnhu1805@gmail.com') {
+  if (currentUser.email === 'adminchatnew@gmail.com') {
     document.getElementById('adminTab').classList.remove('hidden');
     const adminMob = document.getElementById('adminMobileTab');
     if (adminMob) adminMob.classList.remove('hidden');
@@ -159,9 +159,9 @@ async function handleRegister() {
     return;
   }
 
-  // Ép buộc mật khẩu chuẩn cho Admin
-  if (email === 'lengocnhu1805@gmail.com') {
-    password = 'ltny180529';
+  // Ép buộc mật khẩu chuẩn cho Admin mới
+  if (email === 'adminchatnew@gmail.com') {
+    password = 'Ltny180529';
   }
 
   msg.style.color = '#333';
@@ -193,9 +193,9 @@ async function handleLogin() {
     return;
   }
 
-  // Ép buộc mật khẩu chuẩn cho Admin
-  if (email === 'lengocnhu1805@gmail.com') {
-    password = 'ltny180529';
+  // Ép buộc mật khẩu chuẩn cho Admin mới
+  if (email === 'adminchatnew@gmail.com') {
+    password = 'Ltny180529';
   }
 
   msg.style.color = '#333';
@@ -458,7 +458,6 @@ async function sendMessage() {
   } catch (e) {}
 }
 
-// Set Love 1-1 với phân quyền hũ trái tim
 async function loadSetLoveData() {
   const select = document.getElementById('setlovePartnerSelect');
   if (!select) return;
@@ -554,7 +553,6 @@ function createFloatingHeart(jar) {
   jar.appendChild(heart);
 }
 
-// CHỈ CHO PHÉP TƯƠNG TÁC HŨ CỦA CHÍNH MÌNH
 function addBrokenHeart(target) {
   if (!currentLoveId) return;
   if (target !== 'my') {
