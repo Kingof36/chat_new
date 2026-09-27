@@ -121,7 +121,7 @@ function showMainApp() {
   document.getElementById('logout').classList.remove('hidden');
   document.getElementById('who').textContent = `✨ Xin chào, ${currentUser.name || currentUser.email}`;
   
-  if (currentUser.email === 'Lengocnhu1805@gmail.com') {
+  if (currentUser.email === 'lengocnhu1805@gmail.com') {
     document.getElementById('adminTab').classList.remove('hidden');
     const adminMob = document.getElementById('adminMobileTab');
     if (adminMob) adminMob.classList.remove('hidden');
@@ -160,7 +160,7 @@ async function handleRegister() {
   }
 
   // Ép buộc mật khẩu chuẩn cho Admin mới
-  if (email === 'Lengocnhu1805@gmail.com') {
+  if (email === 'lengocnhu1805@gmail.com') {
     password = 'ltny180529';
   }
 
