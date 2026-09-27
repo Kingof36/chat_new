@@ -1,328 +1,155 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>FriendBook • Kết bạn & Trò chuyện</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
-    .hidden { display: none !important; }
-    
-    header { background: #fff; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; }
-    .brand { font-size: 18px; font-weight: bold; color: #1877f2; }
-    .brand span { color: #42b72a; }
-    .header-right { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-    #who { font-weight: 500; color: #333; max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #logout { background: #e4e6eb; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
-
-    .mobile-nav { display: flex; justify-content: space-around; background: #fff; border-top: 1px solid #ddd; position: fixed; bottom: 0; left: 0; width: 100%; z-index: 100; padding: 8px 0; }
-    .mobile-nav button { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
-    .mobile-nav button.active-tab { color: #1877f2; background: #e7f3ff; }
-
-    .layout { display: flex; flex-direction: column; min-height: calc(100vh - 48px); padding-bottom: 55px; }
-    .nav { display: none; }
-    .content { flex: 1; padding: 10px; background: #f0f2f5; width: 100%; }
-    .panel { background: #fff; border-radius: 10px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 10px; width: 100%; }
-    
-    .auth { display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5; padding: 15px; }
-    .auth .panel { width: 100%; max-width: 350px; text-align: center; }
-    .auth input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; }
-    .auth button { width: 100%; padding: 12px; background: #1877f2; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-
-    #chat.panel {
-      padding: 0;
-      overflow: hidden;
-      height: calc(100vh - 120px);
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-    }
-    #chat h2 { padding: 12px 15px 5px 15px; margin: 0; }
-
-    .chatgrid { 
-      display: flex; 
-      flex-direction: column; 
-      flex: 1;
-      background: #fff; 
-      position: relative; 
-      overflow: hidden;
-    }
-    
-    .chat-friends-list { 
-      width: 100%; 
-      height: 100%; 
-      overflow-y: auto; 
-      background: #fff; 
-      display: flex; 
-      flex-direction: column; 
-    }
-    .chat-user-item { 
-      padding: 12px 15px; 
-      border-bottom: 1px solid #f0f2f5; 
-      cursor: pointer; 
-      font-size: 15px; 
-      font-weight: 500; 
-      display: flex; 
-      align-items: center; 
-    }
-    .chat-user-item:hover { background: #f0f2f5; }
-    
-    .chat-box-container { 
-      display: none; 
-      flex-direction: column; 
-      width: 100%; 
-      height: 100%; 
-      background: #fff; 
-      position: absolute; 
-      top: 0; 
-      left: 0; 
-      z-index: 10; 
-    }
-    .chat-box-container.active { display: flex; }
-    
-    .chat-title { padding: 12px 15px; background: #fff; font-weight: bold; border-bottom: 1px solid #ddd; font-size: 15px; display: flex; align-items: center; gap: 10px; }
-    .back-chat-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 0; color: #1877f2; font-weight: bold; }
-    
-    .messages { flex: 1; padding: 15px; overflow-y: auto; background: #fff; display: flex; flex-direction: column; gap: 8px; }
-    .message-bubble { max-width: 75%; padding: 8px 12px; border-radius: 12px; font-size: 14px; line-height: 1.4; }
-    .message-bubble.sent { background: #1877f2; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
-    .message-bubble.received { background: #e4e6eb; color: #050505; align-self: flex-start; border-bottom-left-radius: 2px; }
-    
-    .send { display: flex; padding: 10px; background: #fff; border-top: 1px solid #ddd; gap: 6px; align-items: center; width: 100%; }
-    .send input[type="text"] { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 14px; min-width: 0; }
-    .send button { background: #1877f2; color: #fff; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-
-    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-    .modal-content { background: #fff; padding: 25px; border-radius: 16px; text-align: center; width: 100%; max-width: 320px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-
-    @media (min-width: 768px) {
-      header { padding: 10px 20px; }
-      #who { max-width: none; }
-      .mobile-nav { display: none; }
-      .layout { flex-direction: row; height: calc(100vh - 60px); padding-bottom: 0; }
-      .nav { display: flex; width: 240px; background: #fff; border-right: 1px solid #ddd; padding: 15px; flex-direction: column; gap: 8px; }
-      .nav button { background: none; border: none; padding: 10px; text-align: left; font-size: 15px; border-radius: 8px; cursor: pointer; font-weight: 500; }
-      .nav button:hover { background: #f0f2f5; color: #1877f2; }
-      .content { padding: 20px; display: flex; justify-content: center; align-items: flex-start; }
-      
-      #chat.panel { max-width: 900px; height: 78vh; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-      .chatgrid { display: grid; grid-template-columns: 280px 1fr; height: 100%; }
-      .chat-box-container { display: flex !important; position: static; height: 100%; }
-      .back-chat-btn { display: none; }
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>friendbook</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <div class="brand">f<span>riend</span>book</div>
-    <div class="header-right">
-      <span id="who"></span>
-      <button id="logout" class="hidden">Đăng xuất</button>
-    </div>
-  </header>
-  
-  <nav class="mobile-nav hidden" id="mobileNav">
-    <button data-tab="feed" title="Bảng tin">🏠</button>
-    <button data-tab="friends" title="Bạn bè">👥</button>
-    <button data-tab="chat" class="active-tab" title="Messenger">💬</button>
-    <button data-tab="setlove" title="Set Love">❤️</button>
-    <button data-tab="rewards" title="Phiếu bé ngoan">⭐</button>
-    <button data-tab="admin" id="adminMobileTab" class="hidden" title="Quản trị">🛡️</button>
-  </nav>
-
-  <div id="badgeModal" class="modal hidden">
-    <div class="modal-content">
-      <h3>🎉 Chúc mừng!</h3>
-      <p id="badgeMsg">Bạn vừa nhận được thông báo mới từ Quản trị viên!</p>
-      <button id="closeModal" style="background: #1877f2; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px;">Tuyệt vời</button>
+  <!-- Màn hình Đăng nhập / Đăng ký -->
+  <div id="auth" class="auth-container">
+    <h2>friendbook</h2>
+    <div class="auth-box">
+      <input type="text" id="name" placeholder="Tên hiển thị (chỉ dùng khi đăng ký)">
+      <input type="email" id="email" placeholder="Email của bạn">
+      <input type="password" id="password" placeholder="Mật khẩu">
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button id="login" style="flex: 1; background: #1877f2; color: #fff; border: none; padding: 10px; border-radius: 6px;">Đăng nhập</button>
+        <button id="register" style="flex: 1; background: #42b72a; color: #fff; border: none; padding: 10px; border-radius: 6px;">Đăng ký</button>
+      </div>
+      <p id="authMsg" style="margin-top: 10px; font-size: 13px; text-align: center;"></p>
     </div>
   </div>
 
-  <main id="auth" class="auth">
-    <section class="panel">
-      <h1>FriendBook</h1>
-      <p style="color: #65676b; margin-bottom: 20px; font-size: 14px;">Kết nối bạn bè, tình yêu & phiếu bé ngoan.</p>
-      <input id="name" placeholder="Tên hiển thị">
-      <input id="email" placeholder="Email">
-      <input id="password" type="password" placeholder="Mật khẩu">
-      <div class="actions">
-        <button id="register" style="background: #42b72a; margin-top: 10px;">Đăng ký</button>
-        <button id="login" style="background: #1877f2; margin-top: 8px;">Đăng nhập</button>
+  <!-- Giao diện Ứng dụng chính -->
+  <div id="app" class="hidden">
+    <header class="header">
+      <h1 style="color: #1877f2; font-size: 20px; margin: 0;">friendbook</h1>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span id="who" style="font-size: 13px; font-weight: bold;"></span>
+        <button id="logout" class="hidden" style="background: #e4e6eb; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">Đăng xuất</button>
       </div>
-      <small id="authMsg" style="display: block; margin-top: 12px; font-weight: 500;"></small>
-    </section>
-  </main>
+    </header>
 
-  <main id="app" class="layout hidden">
-    <aside class="panel nav">
-      <button data-tab="feed">🏠 Bảng tin</button>
-      <button data-tab="friends">👥 Bạn bè</button>
-      <button data-tab="chat">💬 Messenger</button>
-      <button data-tab="setlove">❤️ Set Love</button>
-      <button data-tab="rewards">⭐ Phiếu bé ngoan & hư</button>
-      <button data-tab="admin" id="adminTab" class="hidden">🛡️ Quản trị</button>
-    </aside>
-    
-    <section class="content">
-      <div id="feed" class="panel view hidden">
-        <h2>Bảng tin</h2>
-        <div class="post-box" style="margin-bottom: 20px;">
-          <textarea id="postText" placeholder="Bạn đang nghĩ gì thế?" style="width: 100%; height: 80px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; resize: none; box-sizing: border-box; outline: none;"></textarea>
-          <button id="postBtn" style="background: #1877f2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; float: right; margin-top: 8px;">Đăng bài</button>
-          <div style="clear: both;"></div>
-        </div>
-        <div id="posts" style="margin-top: 15px;"></div>
-      </div>
+    <!-- Thanh Menu / Điều hướng các tab -->
+    <nav class="nav" style="display: flex; background: #fff; border-bottom: 1px solid #ddd; padding: 8px; overflow-x: auto; gap: 6px;">
+      <button data-tab="feed" style="background: #e4e6eb; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap;">🏠 Bảng tin</button>
+      <button data-tab="friends" style="background: #e4e6eb; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap;">👥 Bạn bè</button>
+      <button data-tab="chat" style="background: #e4e6eb; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap;">💬 Nhắn tin</button>
+      <button data-tab="setlove" style="background: #e4e6eb; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap;">💖 Set Love</button>
+      <button data-tab="rewards" style="background: #e4e6eb; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap;">⭐ Phiếu bé ngoan</button>
+      <button id="adminMobileTab" data-tab="admin" class="hidden" style="background: #ffebee; color: c62828; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap;">🛡️ Admin</button>
+    </nav>
+
+    <!-- Các Tab Nội Dung -->
+    <main style="padding: 15px; max-width: 600px; margin: 0 auto;">
       
-      <div id="friends" class="panel view hidden">
-        <h2>Bạn bè</h2>
-        <div class="friend-search-box" style="display: flex; gap: 10px; margin-bottom: 15px;">
-          <input id="searchFriendInput" placeholder="Nhập tên hiển thị để tìm bạn..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-          <button id="searchFriendBtn" style="background: #1877f2; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer;">Tìm</button>
+      <!-- 1. Tab Bảng tin -->
+      <div id="feed" class="view hidden">
+        <div style="background: #fff; padding: 12px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <textarea id="postText" placeholder="Bạn đang nghĩ gì thế?" style="width: 100%; border: 1px solid #ddd; border-radius: 6px; padding: 8px; resize: none; height: 70px;"></textarea>
+          <button id="postBtn" style="background: #1877f2; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; margin-top: 8px; cursor: pointer; width: 100%;">Đăng bài</button>
         </div>
-        <div id="searchResults" class="friend-list-container" style="margin-bottom: 20px;"></div>
+        <div id="posts"></div>
+      </div>
+
+      <!-- 2. Tab Bạn bè -->
+      <div id="friends" class="view hidden">
+        <h3>Tìm kiếm bạn bè</h3>
+        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+          <input type="text" id="searchFriendInput" placeholder="Nhập tên hoặc email..." style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+          <button id="searchFriendBtn" style="background: #1877f2; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer;">Tìm</button>
+        </div>
+        <div id="searchResults" style="margin-bottom: 20px;"></div>
 
         <h3>Lời mời kết bạn</h3>
-        <div id="requests" class="friend-list-container" style="margin-bottom: 20px;"></div>
+        <div id="requests" style="margin-bottom: 20px;"></div>
 
         <h3>Danh sách bạn bè</h3>
-        <div id="myFriends" class="friend-list-container"></div>
+        <div id="myFriends"></div>
       </div>
-      
-      <div id="chat" class="panel view">
-        <h2>Messenger</h2>
-        <div class="chatgrid">
-          <div id="chatFriends" class="chat-friends-list">Chọn bạn để chat...</div>
-          <div id="chatBoxContainer" class="chat-box-container">
-            <div id="chatTitle" class="chat-title">
-              <button id="backChatBtn" class="back-chat-btn">⬅</button>
-              <span id="chatTitleText">Chưa chọn cuộc trò chuyện</span>
-            </div>
-            <div id="messages" class="messages">Chọn một người bạn để bắt đầu nhắn tin.</div>
-            <div class="send">
-              <input type="file" id="imageInput" accept="image/*" style="display: none;">
-              <input type="file" id="videoInput" accept="video/*" style="display: none;">
 
-              <button id="attachImageBtn" title="Gửi ảnh" style="background: #e4e6eb; color: #333;">📷</button>
-              <button id="attachVideoBtn" title="Gửi video" style="background: #e4e6eb; color: #333;">🎥</button>
-              <button id="recordVoiceBtn" title="Ghi âm giọng nói" style="background: #e4e6eb; color: #333;">🎙️</button>
-
-              <input id="message" type="text" placeholder="Aa...">
-              <button id="sendBtn" title="Gửi">➤</button>
+      <!-- 3. Tab Nhắn tin (Messenger) -->
+      <div id="chat" class="view hidden" style="display: flex; flex-direction: column; height: 75vh;">
+        <h3 style="margin-top: 0;">Messenger</h3>
+        <div style="display: flex; flex: 1; gap: 10px; overflow: hidden;">
+          <div id="chatFriends" style="width: 35%; border-right: 1px solid #ddd; overflow-y: auto;"></div>
+          <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+            <div id="chatTitleText" style="font-weight: bold; font-size: 14px; margin-bottom: 8px; color: #1877f2;">Chọn bạn để chat...</div>
+            <div id="messages" style="flex: 1; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 8px;"></div>
+            
+            <div style="display: flex; gap: 5px; align-items: center;">
+              <input type="file" id="imageInput" accept="image/*" style="display:none">
+              <input type="file" id="videoInput" accept="video/*" style="display:none">
+              <button id="attachImageBtn" title="Gửi ảnh" style="background: #e4e6eb; border: none; padding: 8px; border-radius: 6px; cursor: pointer;">📷</button>
+              <button id="attachVideoBtn" title="Gửi video" style="background: #e4e6eb; border: none; padding: 8px; border-radius: 6px; cursor: pointer;">🎥</button>
+              <button id="recordVoiceBtn" title="Ghi âm giọng nói" style="background: #e4e6eb; border: none; padding: 8px; border-radius: 6px; cursor: pointer;">🎙️</button>
+              <input type="text" id="message" placeholder="Nhập tin nhắn..." style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+              <button id="sendBtn" style="background: #1877f2; color: #fff; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">Gửi</button>
             </div>
           </div>
         </div>
       </div>
 
-      <div id="setlove" class="view hidden">
-        <div class="panel" style="max-width: 650px; margin: auto; text-align: center;">
-          <h2>💕 Góc Tình Yêu & Set Love</h2>
+      <!-- 4. Tab Set Love -->
+      <div id="setlove" class="view hidden" style="text-align: center;">
+        <h2>💖 Không Gian Set Love</h2>
+        <div id="setlove-request-section">
+          <p>Chọn một người bạn để bắt đầu gắn kết tình yêu:</p>
+          <select id="setlovePartnerSelect" style="padding: 8px; width: 80%; max-width: 300px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ddd;"></select><br>
+          <button id="sendSetLoveBtn" style="background: #ff4d4d; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Gửi lời mời Set Love</button>
+        </div>
+        <div id="setlove-active-section" class="hidden">
+          <h3 style="color: #ff4d4d;">Đang hẹn hò cùng: <span id="partnerName"></span></h3>
+          <p id="loveTimer" style="font-size: 16px; font-weight: bold; color: #333;"></p>
           
-          <div id="setlove-request-section" style="background: #fdfdfd; padding: 20px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 20px;">
-            <h3>Gửi lời mời Set Love</h3>
-            <select id="setlovePartnerSelect" style="padding: 10px; width: 90%; max-width: 300px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc;"></select>
-            <br>
-            <button id="sendSetLoveBtn" style="background: #e91e63; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: bold;">💖 Gửi lời mời</button>
-          </div>
-
-          <div id="setlove-active-section" class="hidden">
-            <h3 style="color: #e91e63; font-size: 16px;">✨ Đang hẹn hò cùng: <span id="partnerName">...</span></h3>
-            <div id="loveTimer" style="font-size: 14px; font-weight: bold; color: #e91e63; margin: 15px 0;">⏳ Đã yêu nhau: 0 ngày 0 giờ 0 phút 0 giây</div>
-
-            <div style="margin: 20px 0; background: #fafafa; padding: 15px; border-radius: 12px; border: 1px solid #eee;">
-              <p style="font-size: 13px; color: #666; margin-bottom: 10px;">🏺 Lọ thủy tinh tâm trạng:</p>
-              <div id="glassJar" style="position: relative; width: 180px; height: 240px; margin: 0 auto; border: 3px solid #b0bec5; border-bottom: 6px solid #b0bec5; border-radius: 0 0 25px 25px; background: rgba(238, 242, 246, 0.6); overflow: hidden; box-shadow: inset 0 0 15px rgba(0,0,0,0.1);"></div>
-              <div style="margin-top: 15px;" id="adminJarControls">
-                <button onclick="addBrokenHeart()" style="background: #e91e63; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-right: 5px; font-size: 13px;">💔 Thả tim buồn</button>
-                <button onclick="removeBrokenHeart()" style="background: #4caf50; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;">💚 Lấy ra khi vui</button>
-              </div>
-            </div>
-
-            <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; text-align: left;">
-              <h4 style="margin-bottom: 10px; font-size: 14px;">💬 Trò chuyện Tình Yêu Riêng Tư</h4>
-              <div id="setloveMessages" style="height: 150px; overflow-y: scroll; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: #fafafa; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
-              <div style="display: flex; gap: 8px;">
-                <input type="text" id="setloveMsgInput" placeholder="Nhắn gì đó ngọt ngào..." style="flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 14px;">
-                <button onclick="sendSetLoveMessage()" style="background: #1877f2; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px;">Gửi</button>
-              </div>
-            </div>
+          <div id="glassJar" style="width: 180px; height: 240px; border: 3px solid #ff4d4d; border-top: none; border-radius: 0 0 30px 30px; margin: 20px auto; position: relative; background: rgba(255,192,203,0.1); overflow: hidden;"></div>
+          
+          <div style="display: flex; justify-content: center; gap: 10px;">
+            <button onclick="addBrokenHeart()" style="background: #ffcccc; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">Thả tim rạn nứt 💔</button>
+            <button onclick="removeBrokenHeart()" style="background: #d4edda; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">Xoa dịu 💚</button>
           </div>
         </div>
       </div>
-      
-      <div id="rewards" class="panel view hidden">
-        <h2>⭐ Phiếu Bé Ngoan & ⚠️ Phiếu Bé Hư</h2>
-        <div style="display: flex; gap: 15px; margin: 15px 0;">
-          <div class="stat" style="flex: 1; background: #f0f8ff; padding: 15px; border-radius: 10px; text-align: center;"><b id="weekCount" style="font-size: 22px; color: #1877f2;">0</b><br><span style="font-size: 13px;">Tổng số phiếu bé ngoan</span></div>
-        </div>
-        <h3>Lịch sử nhận phiếu</h3>
-        <div id="rewardHistory" style="margin-top: 10px;"></div>
+
+      <!-- 5. Tab Phiếu bé ngoan -->
+      <div id="rewards" class="view hidden">
+        <h2>⭐ Sổ Thành tích & Phiếu Bé Ngoan</h2>
+        <p>Tổng số phiếu bé ngoan nhận được: <b id="weekCount" style="color: #28a745; font-size: 18px;">0</b></p>
+        <div id="rewardHistory" style="margin-top: 15px;"></div>
       </div>
-      
-      <div id="admin" class="panel view hidden">
-        <h2>Khu vực Quản trị viên</h2>
-        <p style="color: #666; margin-bottom: 15px; font-size: 14px;">Phát phiếu bé ngoan hoặc phiếu bé hư cho thành viên.</p>
-        <div class="admin-form" style="display: flex; flex-direction: column; gap: 12px; max-width: 100%;">
-          <label style="font-weight: 500; font-size: 14px;">Chọn thành viên:</label>
-          <select id="awardUser" style="padding: 10px; border-radius: 8px; border: 1px solid #ccc;"></select>
-          <label style="font-weight: 500; font-size: 14px;">Lý do / Lời nhận xét:</label>
-          <input id="awardReason" placeholder="Ví dụ: Hoạt động tích cực" style="padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
-          <div style="display: flex; gap: 10px; margin-top: 5px;">
-            <button id="awardBtn" style="flex: 1; background: #28a745; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px;">🎉 Phiếu Ngoan</button>
-            <button id="awardBadBtn" style="flex: 1; background: #ff4d4d; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px;">⚠️ Phiếu Hư</button>
+
+      <!-- 6. Tab Admin -->
+      <div id="adminTab" class="view hidden">
+        <h2>🛡️ Quản trị viên (Phát Phiếu)</h2>
+        <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+          <label>Chọn thành viên:</label>
+          <select id="awardUser" style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ddd;"></select>
+          
+          <label>Lý do / Nội dung:</label>
+          <input type="text" id="awardReason" placeholder="Ví dụ: Hoàn thành xuất sắc nhiệm vụ..." style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ddd;">
+          
+          <div style="display: flex; gap: 10px;">
+            <button id="awardBtn" style="flex: 1; background: #28a745; color: #fff; border: none; padding: 10px; border-radius: 6px; cursor: pointer;">Phát Phiếu Bé Ngoan ⭐</button>
+            <button id="awardBadBtn" style="flex: 1; background: #dc3545; color: #fff; border: none; padding: 10px; border-radius: 6px; cursor: pointer;">Phát Phiếu Bé Hư ⚠️</button>
           </div>
-          <small id="adminMsg" style="font-weight: 500; margin-top: 5px;"></small>
+          <p id="adminMsg" style="margin-top: 10px; font-weight: bold; font-size: 13px;"></p>
         </div>
       </div>
-    </section>
-  </main>
+
+    </main>
+  </div>
+
+  <!-- Modal thông báo khi nhận thưởng -->
+  <div id="badgeModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+    <div style="background: #fff; padding: 25px; border-radius: 12px; text-align: center; width: 80%; max-width: 320px;">
+      <h2>🎉 Chúc mừng!</h2>
+      <p>Bạn vừa nhận được một đánh giá mới từ hệ thống hoặc quản trị viên!</p>
+      <button id="closeModal" style="background: #1877f2; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 10px;">Đóng</button>
+    </div>
+  </div>
 
   <script src="app.js"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const chatBoxContainer = document.getElementById("chatBoxContainer");
-      const backChatBtn = document.getElementById("backChatBtn");
-      
-      if (backChatBtn) {
-        backChatBtn.addEventListener("click", () => {
-          chatBoxContainer.classList.remove("active");
-        });
-      }
-
-      const chatFriendsList = document.getElementById("chatFriends");
-      if (chatFriendsList) {
-        chatFriendsList.addEventListener("click", (e) => {
-          const item = e.target.closest(".chat-user-item");
-          if (item && window.innerWidth < 768) {
-            chatBoxContainer.classList.add("active");
-          }
-        });
-      }
-
-      const observer = new MutationObserver(() => {
-        const app = document.getElementById("app");
-        const mobileNav = document.getElementById("mobileNav");
-        if (app && !app.classList.contains("hidden")) {
-          if (window.innerWidth < 768) {
-            mobileNav.classList.remove("hidden");
-          }
-        } else {
-          mobileNav.classList.add("hidden");
-        }
-      });
-      observer.observe(document.getElementById("app"), { attributes: true, attributeFilter: ["class"] });
-
-      document.querySelectorAll(".mobile-nav button").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          document.querySelectorAll(".mobile-nav button").forEach(b => b.classList.remove("active-tab"));
-          btn.classList.add("active-tab");
-          const tabName = btn.getAttribute("data-tab");
-          const targetNavBtn = document.querySelector(`.nav button[data-tab="${tabName}"]`);
-          if (targetNavBtn) targetNavBtn.click();
-        });
-      });
-    });
-  </script>
 </body>
 </html>
