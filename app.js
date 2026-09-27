@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwhlb8vnlqNaqjyUQkVOkea9w8CAQe69ijXaJ8LUQd34pedDs2dRsb82c4Nh1vfi72VWQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxpJTJmoXBUAidcnvJ6KJlzIIeGPhP__FBq_ser63IO6Wbc3KQhEzkpDA84O0Ruv-XV/exec";
 
 let currentUser = null;
 let currentChatUser = null;
@@ -105,7 +105,7 @@ function showMainApp() {
     loadAdminUsers();
   }
 
-  // Khởi tạo hiển thị tab Bảng tin mặc định để tránh màn hình trắng
+  // Khởi động trực tiếp vào tab "feed" (Trang chủ / Bảng tin)
   switchTab('feed');
   checkRewardsNotification();
 }
@@ -384,7 +384,7 @@ function toggleVoiceRecording() {
         reader.onload = function(e) {
           base64Media = e.target.result;
           mediaType = 'voice';
-          alert("🎙️ Đã ghi âm xong giọng nói! Bấm Gửi để gửi tin nhắn thoại.");
+          alert("🎙️ Đã ghi âm xong! Bấm Gửi để gửi tin nhắn thoại.");
         };
         reader.readAsDataURL(audioBlob);
       };
@@ -607,8 +607,8 @@ function createFloatingHeartElement(jar) {
   heart.style.position = 'absolute';
   heart.style.fontSize = '18px';
   
-  let posX = Math.random() * 160;
-  let posY = Math.random() * 220;
+  let posX = Math.random() * 140;
+  let posY = Math.random() * 200;
   let speedX = (Math.random() - 0.5) * 2;
   let speedY = (Math.random() - 0.5) * 2;
 
@@ -620,8 +620,8 @@ function createFloatingHeartElement(jar) {
     posX += speedX;
     posY += speedY;
 
-    if (posX <= 0 || posX >= 170) speedX *= -1;
-    if (posY <= 0 || posY >= 230) speedY *= -1;
+    if (posX <= 0 || posX >= 150) speedX *= -1;
+    if (posY <= 0 || posY >= 210) speedY *= -1;
 
     heart.style.left = posX + 'px';
     heart.style.top = posY + 'px';
@@ -633,7 +633,7 @@ function addBrokenHeart() {
   if (jar) {
     createFloatingHeartElement(jar);
     brokenHeartsCount++;
-    alert('💔 Đã thả 1 trái tim rạn nứt vào lọ thủy tinh.');
+    alert('💔 Đã thả 1 trái tim rạn nứt vào lọ.');
   }
 }
 
@@ -642,7 +642,7 @@ function removeBrokenHeart() {
   if (jar && jar.lastChild) {
     jar.removeChild(jar.lastChild);
     brokenHeartsCount = Math.max(0, brokenHeartsCount - 1);
-    alert('💚 Đã lấy bớt 1 trái tim rạn nứt ra khỏi lọ. Vui lên nhé!');
+    alert('💚 Đã lấy bớt 1 trái tim ra khỏi lọ. Vui lên nhé!');
   }
 }
 
