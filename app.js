@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxpJTJmoXBUAidcnvJ6KJlzIIeGPhP__FBq_ser63IO6Wbc3KQhEzkpDA84O0Ruv-XV/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyWSs4W0i0lbzswmOv6F8fby7aL1K3diIH8_tKZpsfu22VqK3l81hc3zQVCIuTMLc9T8A/exec";
 
 let currentUser = null;
 let currentChatUser = null;
@@ -6,7 +6,6 @@ let base64Media = "";
 let mediaType = "";  
 let mediaRecorder = null;
 let audioChunks = [];
-let brokenHeartsCount = 3; 
 
 try {
   currentUser = JSON.parse(localStorage.getItem('friendbook_user')) || null;
@@ -43,29 +42,20 @@ function initApp() {
   const recordVoiceBtn = document.getElementById('recordVoiceBtn');
 
   if (sendBtn) sendBtn.addEventListener('click', sendMessage);
-  
   if (attachImageBtn && imageInput) {
     attachImageBtn.addEventListener('click', () => imageInput.click());
     imageInput.addEventListener('change', (e) => handleMediaUpload(e, 'image'));
   }
-
   if (attachVideoBtn && videoInput) {
     attachVideoBtn.addEventListener('click', () => videoInput.click());
     videoInput.addEventListener('change', (e) => handleMediaUpload(e, 'video'));
   }
-
   if (recordVoiceBtn) {
     recordVoiceBtn.addEventListener('click', toggleVoiceRecording);
   }
 
   const searchBtn = document.getElementById('searchFriendBtn');
   if (searchBtn) searchBtn.addEventListener('click', handleSearchFriends);
-  const searchInput = document.getElementById('searchFriendInput');
-  if (searchInput) {
-    searchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') handleSearchFriends();
-    });
-  }
 
   const sendLoveBtn = document.getElementById('sendSetLoveBtn');
   if (sendLoveBtn) {
@@ -82,6 +72,39 @@ function initApp() {
   if (closeModal) {
     closeModal.addEventListener('click', () => {
       document.getElementById('badgeModal').classList.add('hidden');
+    });
+  }
+
+  // Đổi hình nền Chat & Set Love
+  const chatBgInput = document.getElementById('chatBgInput');
+  if (chatBgInput) {
+    chatBgInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const bgUrl = evt.target.result;
+          document.getElementById('chatBoxContainer').style.backgroundImage = `url(${bgUrl})`;
+          localStorage.setItem(`chat_bg_${currentUser.email}`, bgUrl);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  const loveBgInput = document.getElementById('loveBgInput');
+  if (loveBgInput) {
+    loveBgInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const bgUrl = evt.target.result;
+          document.getElementById('setlove-active-section').style.backgroundImage = `url(${bgUrl})`;
+          localStorage.setItem(`love_bg_${currentUser.email}`, bgUrl);
+        };
+        reader.readAsDataURL(file);
+      }
     });
   }
 
@@ -105,7 +128,13 @@ function showMainApp() {
     loadAdminUsers();
   }
 
-  // Khởi động trực tiếp vào tab "feed" (Trang chủ / Bảng tin)
+  // Khôi phục background đã lưu nếu có
+  const savedChatBg = localStorage.getItem(`chat_bg_${currentUser.email}`);
+  if (savedChatBg) document.getElementById('chatBoxContainer').style.backgroundImage = `url(${savedChatBg})`;
+
+  const savedLoveBg = localStorage.getItem(`love_bg_${currentUser.email}`);
+  if (savedLoveBg) document.getElementById('setlove-active-section').style.backgroundImage = `url(${savedLoveBg})`;
+
   switchTab('feed');
   checkRewardsNotification();
 }
@@ -221,24 +250,6 @@ async function handleCreatePost() {
   if (!content) return;
 
   contentInput.value = '';
-  const container = document.getElementById('posts');
-  const tempCard = document.createElement('div');
-  tempCard.className = 'post-card';
-  tempCard.style.cssText = "background: #fff; padding: 16px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); opacity: 0.8;";
-  const tempTimeNow = new Date().toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date().toLocaleDateString("vi-VN");
-  
-  tempCard.innerHTML = `
-    <b style="color: #1877f2; font-size: 15px;">👤 ${currentUser.name || currentUser.email}</b>
-    <p style="margin: 10px 0; font-size: 14px; color: #333;">${content}</p>
-    <small style="color: #888; font-size: 12px;">🕒 ${tempTimeNow} (đang đăng...)</small>
-  `;
-  
-  if (container.firstChild) {
-    container.insertBefore(tempCard, container.firstChild);
-  } else {
-    container.appendChild(tempCard);
-  }
-
   try {
     await fetch(API_URL, { 
       method: 'POST', 
@@ -265,46 +276,27 @@ async function handleSearchFriends() {
   const keyword = document.getElementById('searchFriendInput').value.trim();
   const resultsContainer = document.getElementById('searchResults');
   
-  if (!keyword) {
-    resultsContainer.innerHTML = '<p style="padding: 10px; color: red; font-size: 13px;">Vui lòng nhập tên hiển thị để tìm kiếm!</p>';
-    return;
-  }
-
-  resultsContainer.innerHTML = '<p style="padding: 10px; font-size: 13px;">⏳ Đang tìm kiếm...</p>';
+  if (!keyword) return;
   try {
     const res = await fetch(`${API_URL}?action=searchUsers&keyword=${encodeURIComponent(keyword)}&email=${encodeURIComponent(currentUser.email)}`);
     const result = await res.json();
-    
     if (result.status === 'success') {
-      if (result.users.length === 0) {
-        resultsContainer.innerHTML = '<p style="padding: 10px; font-size: 13px; color: #666;">Không tìm thấy người dùng phù hợp.</p>';
-        return;
-      }
-
       resultsContainer.innerHTML = result.users.map(u => `
-        <div class="friend-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f9f9f9; margin-bottom: 8px; border-radius: 8px;">
-          <div>
-            <b style="font-size: 14px; color: #050505;">👤 ${u.name}</b><br>
-            <small style="color: #65676b;">${u.email}</small>
-          </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f9f9f9; margin-bottom: 8px; border-radius: 8px;">
+          <div><b>${u.name}</b><br><small>${u.email}</small></div>
           <button onclick="sendFriendRequest('${u.email}')" style="background: #1877f2; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Kết bạn</button>
         </div>
-      `).join('');
+      `).join('') || '<p>Không tìm thấy.</p>';
     }
-  } catch (e) {
-    resultsContainer.innerHTML = '<p style="padding: 10px; color: red; font-size: 13px;">Lỗi kết nối.</p>';
-  }
+  } catch (e) {}
 }
 
 async function sendFriendRequest(targetEmail) {
   try {
-    await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'sendFriendRequest', from: currentUser.email, to: targetEmail })
-    });
+    await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'sendFriendRequest', from: currentUser.email, to: targetEmail }) });
     alert('✨ Đã gửi lời mời kết bạn!');
     loadFriendsData();
-  } catch (e) { alert('Lỗi kết nối.'); }
+  } catch (e) {}
 }
 
 async function loadFriendRequests() {
@@ -315,27 +307,21 @@ async function loadFriendRequests() {
     const result = await res.json();
     if (result.status === 'success') {
       container.innerHTML = result.requests.map(r => `
-        <div class="friend-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f9f9f9; margin-bottom: 8px; border-radius: 8px;">
-          <div>
-            <b style="font-size: 14px; color: #050505;">👤 ${r.name}</b><br>
-            <small style="color: #65676b;">${r.email}</small>
-          </div>
-          <button class="accept" onclick="acceptFriendRequest('${r.email}')" style="background: #28a745; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Chấp nhận</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f9f9f9; margin-bottom: 8px; border-radius: 8px;">
+          <div><b>${r.name}</b><br><small>${r.email}</small></div>
+          <button onclick="acceptFriendRequest('${r.email}')" style="background: #28a745; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Chấp nhận</button>
         </div>
-      `).join('') || '<p style="padding: 10px; color: #666; font-size: 13px;">Không có lời mời kết bạn nào.</p>';
+      `).join('') || '<p style="color: #666; font-size: 13px;">Không có lời mời kết bạn nào.</p>';
     }
   } catch (e) {}
 }
 
 async function acceptFriendRequest(fromEmail) {
   try {
-    await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'acceptFriendRequest', user1: currentUser.email, user2: fromEmail })
-    });
-    alert('🎉 Đã kết bạn thành công!');
+    await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'acceptFriendRequest', user1: currentUser.email, user2: fromEmail }) });
+    alert('🎉 Đã kết bạn!');
     loadFriendsData();
-  } catch (e) { alert('Lỗi kết nối.'); }
+  } catch (e) {}
 }
 
 async function loadMyFriends() {
@@ -346,14 +332,11 @@ async function loadMyFriends() {
     const result = await res.json();
     if (result.status === 'success') {
       container.innerHTML = result.friends.map(f => `
-        <div class="friend-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f9f9f9; margin-bottom: 8px; border-radius: 8px;">
-          <div>
-            <b style="font-size: 14px; color: #050505;">👤 ${f.name}</b><br>
-            <small style="color: #65676b;">${f.email}</small>
-          </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f9f9f9; margin-bottom: 8px; border-radius: 8px;">
+          <div><b>${f.name}</b><br><small>${f.email}</small></div>
           <button onclick="switchTab('chat'); selectChatUser('${f.email}', '${f.name}');" style="background: #1877f2; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Nhắn tin</button>
         </div>
-      `).join('') || '<p style="padding: 10px; color: #666; font-size: 13px;">Chưa có bạn bè nào.</p>';
+      `).join('') || '<p style="color: #666; font-size: 13px;">Chưa có bạn bè.</p>';
     }
   } catch (e) {}
 }
@@ -365,7 +348,7 @@ function handleMediaUpload(e, type) {
   reader.onload = function(uploadEvent) {
     base64Media = uploadEvent.target.result;
     mediaType = type;
-    alert(`✨ Đã đính kèm ${type === 'image' ? 'ảnh' : 'video'} thành công! Bấm Gửi để gửi đi.`);
+    alert(`✨ Đã đính kèm ${type === 'image' ? 'ảnh' : 'video'}! Bấm Gửi.`);
   };
   reader.readAsDataURL(file);
 }
@@ -375,24 +358,20 @@ function toggleVoiceRecording() {
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
       mediaRecorder = new MediaRecorder(stream);
       audioChunks = [];
-      mediaRecorder.ondataavailable = event => {
-        audioChunks.push(event.data);
-      };
+      mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
         const reader = new FileReader();
         reader.onload = function(e) {
           base64Media = e.target.result;
           mediaType = 'voice';
-          alert("🎙️ Đã ghi âm xong! Bấm Gửi để gửi tin nhắn thoại.");
+          alert("🎙️ Đã ghi âm xong! Bấm Gửi.");
         };
         reader.readAsDataURL(audioBlob);
       };
       mediaRecorder.start();
-      alert("🔴 Đang ghi âm... Bấm lại nút Ghi âm một lần nữa để kết thúc.");
-    }).catch(err => {
-      alert("⚠️ Không thể truy cập micro của bạn!");
-    });
+      alert("🔴 Đang ghi âm... Bấm lại lần nữa để dừng.");
+    }).catch(err => alert("⚠️ Không thể truy cập Micro!"));
   } else if (mediaRecorder && mediaRecorder.state === "recording") {
     mediaRecorder.stop();
   }
@@ -401,24 +380,22 @@ function toggleVoiceRecording() {
 async function loadChatUsers() {
   const list = document.getElementById('chatFriends');
   if (!list) return;
-  list.innerHTML = '<p style="padding: 12px; font-size: 13px;">⏳ Đang tải danh sách...</p>';
   try {
     const res = await fetch(`${API_URL}?action=getMyFriends&email=${encodeURIComponent(currentUser.email)}`);
     const result = await res.json();
     if (result.status === 'success') {
       list.innerHTML = result.friends.map(u => `
-        <div class="chat-user-item" onclick="selectChatUser('${u.email}', '${u.name}')" style="padding: 12px; cursor: pointer; border-bottom: 1px solid #eee; transition: 0.2s;">
+        <div onclick="selectChatUser('${u.email}', '${u.name}')" style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 13px;">
           👤 ${u.name}
         </div>
-      `).join('') || '<p style="padding: 12px; font-size: 13px; color: #666;">Chưa có bạn bè để nhắn tin.</p>';
+      `).join('') || '<p style="padding: 10px; font-size: 12px;">Chưa có bạn.</p>';
     }
-  } catch (e) { list.innerHTML = '<p style="padding: 12px;">Lỗi tải danh sách.</p>'; }
+  } catch (e) {}
 }
 
 function selectChatUser(email, name) {
   currentChatUser = email;
-  const titleEl = document.getElementById('chatTitleText');
-  if (titleEl) titleEl.textContent = `Đang chat với: ${name}`;
+  document.getElementById('chatTitleText').textContent = `Đang chat với: ${name}`;
   loadMessages();
 }
 
@@ -432,22 +409,20 @@ async function loadMessages() {
       msgContainer.innerHTML = result.messages.map(m => {
         let mediaHTML = '';
         if (m.image) {
-          if (m.image.startsWith('data:video') || m.image.includes('video')) {
-            mediaHTML = `<video controls style="max-width: 220px; border-radius: 8px; margin-top: 5px; display: block;"><source src="${m.image}"></video>`;
-          } else if (m.image.startsWith('data:audio') || m.image.includes('audio')) {
-            mediaHTML = `<audio controls style="max-width: 220px; margin-top: 5px; display: block;"><source src="${m.image}"></audio>`;
-          } else {
-            mediaHTML = `<img src="${m.image}" style="max-width: 200px; border-radius: 8px; margin-top: 5px; display: block;" />`;
-          }
+          if (m.image.startsWith('data:video')) mediaHTML = `<video controls style="max-width: 200px; display: block;"><source src="${m.image}"></video>`;
+          else if (m.image.startsWith('data:audio')) mediaHTML = `<audio controls style="max-width: 200px; display: block;"><source src="${m.image}"></audio>`;
+          else mediaHTML = `<img src="${m.image}" style="max-width: 180px; border-radius: 6px; display: block;" />`;
         }
         return `
-          <div class="message-bubble ${m.from === currentUser.email ? 'sent' : 'received'}" style="margin-bottom: 10px;">
-            <p style="margin: 0;">${m.text}</p>
-            ${mediaHTML}
-            <small style="font-size: 10px; opacity: 0.7;">${m.time}</small>
+          <div style="margin-bottom: 8px; text-align: ${m.from === currentUser.email ? 'right' : 'left'};">
+            <div style="display: inline-block; padding: 8px 12px; border-radius: 8px; background: ${m.from === currentUser.email ? '#dcf8c6' : '#fff'}; text-align: left; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+              <p style="margin: 0; font-size: 13px;">${m.text}</p>
+              ${mediaHTML}
+              <small style="font-size: 9px; opacity: 0.6;">${m.time}</small>
+            </div>
           </div>
         `;
-      }).join('') || '<p style="text-align: center; color: #888; font-size: 13px;">Hãy gửi tin nhắn đầu tiên!</p>';
+      }).join('') || '<p style="text-align: center; color: #888; font-size: 12px;">Chưa có tin nhắn.</p>';
       msgContainer.scrollTop = msgContainer.scrollHeight;
     }
   } catch (e) {}
@@ -460,54 +435,20 @@ async function sendMessage() {
 
   const tempText = text;
   const tempMedia = base64Media;
-  const tempMediaType = mediaType;
-  const tempTime = new Date().toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit' });
-
   textInput.value = '';
   base64Media = "";
   mediaType = "";
 
-  const msgContainer = document.getElementById('messages');
-  const tempBubble = document.createElement('div');
-  tempBubble.className = 'message-bubble sent';
-  
-  let tempMediaHTML = '';
-  if (tempMedia) {
-    if (tempMediaType === 'video') {
-      tempMediaHTML = `<video controls style="max-width: 220px; border-radius: 8px; margin-top: 5px; display: block;"><source src="${tempMedia}"></video>`;
-    } else if (tempMediaType === 'voice') {
-      tempMediaHTML = `<audio controls style="max-width: 220px; margin-top: 5px; display: block;"><source src="${tempMedia}"></audio>`;
-    } else {
-      tempMediaHTML = `<img src="${tempMedia}" style="max-width: 200px; border-radius: 8px; margin-top: 5px; display: block;" />`;
-    }
-  }
-
-  tempBubble.innerHTML = `
-    <p style="margin: 0;">${tempText}</p>
-    ${tempMediaHTML}
-    <small style="font-size: 10px; opacity: 0.7;">${tempTime} (đang gửi...)</small>
-  `;
-  msgContainer.appendChild(tempBubble);
-  msgContainer.scrollTop = msgContainer.scrollHeight;
-
   try {
     await fetch(API_URL, {
       method: 'POST',
-      body: JSON.stringify({
-        action: 'sendMessage',
-        from: currentUser.email,
-        to: currentChatUser,
-        text: tempText,
-        image: tempMedia
-      })
+      body: JSON.stringify({ action: 'sendMessage', from: currentUser.email, to: currentChatUser, text: tempText, image: tempMedia })
     });
     loadMessages();
-  } catch (e) {
-    alert('Không thể gửi tin nhắn!');
-    loadMessages();
-  }
+  } catch (e) {}
 }
 
+// Set Love 1-1 với 2 Hũ Trái Tim
 async function loadSetLoveData() {
   const select = document.getElementById('setlovePartnerSelect');
   if (!select) return;
@@ -524,35 +465,22 @@ async function loadSetLoveData() {
 }
 
 async function handleSendSetLoveRequest() {
-  const partnerSelect = document.getElementById('setlovePartnerSelect');
-  if (!partnerSelect) return;
-  
-  const partnerEmail = partnerSelect.value;
-  if (!partnerEmail) {
-    alert('⚠️ Vui lòng chọn một người bạn để Set Love!');
-    return;
-  }
+  const partnerEmail = document.getElementById('setlovePartnerSelect').value;
+  if (!partnerEmail) return alert('⚠️ Vui lòng chọn người bạn muốn Set Love!');
 
   try {
     const res = await fetch(API_URL, {
       method: 'POST',
-      body: JSON.stringify({ 
-        action: 'sendSetLove', 
-        from: currentUser.email, 
-        to: partnerEmail 
-      })
+      body: JSON.stringify({ action: 'sendSetLove', from: currentUser.email, to: partnerEmail })
     });
-    
     const result = await res.json();
     if (result.status === 'success') {
-      alert('💖 ' + (result.message || 'Đã gửi lời mời Set Love thành công!'));
+      alert('💖 Đã Set Love thành công!');
       checkLoveStatus();
     } else {
-      alert('⚠️ ' + (result.message || 'Không thể gửi lời mời Set Love.'));
+      alert('⚠️ ' + result.message);
     }
-  } catch (e) {
-    alert('❌ Lỗi kết nối máy chủ khi gửi lời mời Set Love.');
-  }
+  } catch (e) {}
 }
 
 async function checkLoveStatus() {
@@ -565,12 +493,61 @@ async function checkLoveStatus() {
       document.getElementById('partnerName').textContent = result.partnerName;
       
       startLoveTimer(result.loveSince);
-      initGlassJarAnimation();
+      initGlassJars(result.loveId);
     } else {
       document.getElementById('setlove-request-section').classList.remove('hidden');
       document.getElementById('setlove-active-section').classList.add('hidden');
     }
   } catch (e) {}
+}
+
+let currentLoveId = null;
+function initGlassJars(loveId) {
+  currentLoveId = loveId;
+  renderJarsFromStorage();
+}
+
+function renderJarsFromStorage() {
+  const myCount = parseInt(localStorage.getItem(`jar_my_${currentLoveId}`) || '3');
+  const partnerCount = parseInt(localStorage.getItem(`jar_partner_${currentLoveId}`) || '3');
+
+  const myJar = document.getElementById('myGlassJar');
+  const partnerJar = document.getElementById('partnerGlassJar');
+
+  if (myJar) {
+    myJar.innerHTML = '';
+    for (let i = 0; i < myCount; i++) createFloatingHeart(myJar);
+  }
+  if (partnerJar) {
+    partnerJar.innerHTML = '';
+    for (let i = 0; i < partnerCount; i++) createFloatingHeart(partnerJar);
+  }
+}
+
+function createFloatingHeart(jar) {
+  const heart = document.createElement('div');
+  heart.innerHTML = '💔';
+  heart.style.position = 'absolute';
+  heart.style.fontSize = '16px';
+  heart.style.left = Math.random() * 110 + 'px';
+  heart.style.top = Math.random() * 160 + 'px';
+  jar.appendChild(heart);
+}
+
+function addBrokenHeart(target) {
+  if (!currentLoveId) return;
+  const key = `jar_${target}_${currentLoveId}`;
+  let count = parseInt(localStorage.getItem(key) || '3') + 1;
+  localStorage.setItem(key, count);
+  renderJarsFromStorage();
+}
+
+function removeBrokenHeart(target) {
+  if (!currentLoveId) return;
+  const key = `jar_${target}_${currentLoveId}`;
+  let count = Math.max(0, parseInt(localStorage.getItem(key) || '3') - 1);
+  localStorage.setItem(key, count);
+  renderJarsFromStorage();
 }
 
 function startLoveTimer(startDateStr) {
@@ -588,62 +565,6 @@ function startLoveTimer(startDateStr) {
       timerEl.textContent = `⏳ Đã yêu nhau: ${days} ngày ${hours} giờ ${minutes} phút ${seconds} giây`;
     }
   }, 1000);
-}
-
-function initGlassJarAnimation() {
-  const jar = document.getElementById('glassJar');
-  if (!jar) return;
-  
-  if (jar.children.length === 0) {
-    for (let i = 0; i < brokenHeartsCount; i++) {
-      createFloatingHeartElement(jar);
-    }
-  }
-}
-
-function createFloatingHeartElement(jar) {
-  const heart = document.createElement('div');
-  heart.innerHTML = '💔';
-  heart.style.position = 'absolute';
-  heart.style.fontSize = '18px';
-  
-  let posX = Math.random() * 140;
-  let posY = Math.random() * 200;
-  let speedX = (Math.random() - 0.5) * 2;
-  let speedY = (Math.random() - 0.5) * 2;
-
-  heart.style.left = posX + 'px';
-  heart.style.top = posY + 'px';
-  jar.appendChild(heart);
-
-  setInterval(() => {
-    posX += speedX;
-    posY += speedY;
-
-    if (posX <= 0 || posX >= 150) speedX *= -1;
-    if (posY <= 0 || posY >= 210) speedY *= -1;
-
-    heart.style.left = posX + 'px';
-    heart.style.top = posY + 'px';
-  }, 30);
-}
-
-function addBrokenHeart() {
-  const jar = document.getElementById('glassJar');
-  if (jar) {
-    createFloatingHeartElement(jar);
-    brokenHeartsCount++;
-    alert('💔 Đã thả 1 trái tim rạn nứt vào lọ.');
-  }
-}
-
-function removeBrokenHeart() {
-  const jar = document.getElementById('glassJar');
-  if (jar && jar.lastChild) {
-    jar.removeChild(jar.lastChild);
-    brokenHeartsCount = Math.max(0, brokenHeartsCount - 1);
-    alert('💚 Đã lấy bớt 1 trái tim ra khỏi lọ. Vui lên nhé!');
-  }
 }
 
 async function checkRewardsNotification() {
@@ -667,11 +588,11 @@ async function loadRewards() {
     if (result.status === 'success') {
       document.getElementById('weekCount').textContent = result.count;
       document.getElementById('rewardHistory').innerHTML = result.history.map(h => {
-        let isBad = h.reason && (h.reason.toLowerCase().includes('hư') || h.type === 'hu');
+        let isBad = h.type === 'hu';
         let icon = isBad ? '⚠️' : '⭐';
         let titleText = isBad ? 'Nhận 1 phiếu bé hư' : 'Nhận 1 phiếu bé ngoan';
-        return `<div class="reward-item" style="padding: 10px; background: ${isBad ? '#fff5f5' : '#f0f8ff'}; margin-bottom: 8px; border-radius: 8px;">${icon} ${titleText} lúc ${h.time} <br><small style="color: #666;">Lý do: ${h.reason}</small></div>`;
-      }).join('') || '<p style="font-size: 13px; color: #666;">Chưa có lịch sử nhận phiếu.</p>';
+        return `<div style="padding: 10px; background: ${isBad ? '#fff5f5' : '#f0f8ff'}; margin-bottom: 8px; border-radius: 8px; font-size: 13px;">${icon} ${titleText} lúc ${h.time} <br><small style="color: #666;">Lý do: ${h.reason}</small></div>`;
+      }).join('') || '<p style="font-size: 13px; color: #666;">Chưa có phiếu nào.</p>';
     }
   } catch (e) {}
 }
@@ -688,19 +609,24 @@ async function loadAdminUsers() {
 
 async function handleAwardBadge(type) {
   const email = document.getElementById('awardUser').value;
-  const reason = document.getElementById('awardReason').value;
+  const reason = document.getElementById('awardReason').value.trim();
   const msg = document.getElementById('adminMsg');
 
   const actionName = type === 'hu' ? 'awardBadBadge' : 'awardBadge';
 
-  const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: actionName, email, reason }) });
-  const result = await res.json();
-  if (result.status === 'success') {
-    msg.style.color = '#28a745';
-    msg.textContent = type === 'hu' ? '⚠️ Đã phát phiếu bé hư thành công!' : '🎉 Phát phiếu bé ngoan thành công!';
-    document.getElementById('awardReason').value = '';
-  } else {
+  try {
+    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: actionName, email, reason }) });
+    const result = await res.json();
+    if (result.status === 'success') {
+      msg.style.color = '#28a745';
+      msg.textContent = type === 'hu' ? '⚠️ Đã phát phiếu bé hư thành công!' : '🎉 Phát phiếu bé ngoan thành công!';
+      document.getElementById('awardReason').value = '';
+    } else {
+      msg.style.color = '#ff4d4d';
+      msg.textContent = '❌ Lỗi phát phiếu.';
+    }
+  } catch (e) {
     msg.style.color = '#ff4d4d';
-    msg.textContent = '❌ Lỗi phát phiếu.';
+    msg.textContent = '❌ Lỗi kết nối.';
   }
 }
