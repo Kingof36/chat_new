@@ -192,12 +192,6 @@ async function handleLogin() {
     msg.textContent = '⚠️ Vui lòng nhập tài khoản!';
     return;
   }
-
-  // Ép buộc mật khẩu chuẩn cho Admin mới
-  if (email === 'adminchatnew@gmail.com') {
-    password = 'Ltny180529';
-  }
-
   msg.style.color = '#333';
   msg.textContent = '🔄 Đang đăng nhập...';
   try {
