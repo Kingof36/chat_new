@@ -2,11 +2,11 @@ const API_URL = "https://script.google.com/macros/s/AKfycbz2xTSzq_mzD2Le5HEmhWQm
 
 let currentUser = null;
 let currentChatUser = null;
-let base64Media = ""; // Lưu trữ Ảnh, Video hoặc Voice dưới dạng base64
-let mediaType = "";  // 'image', 'video', hoặc 'voice'
+let base64Media = ""; 
+let mediaType = "";  
 let mediaRecorder = null;
 let audioChunks = [];
-let brokenHeartsCount = 3; // Số lượng trái tim rạn nứt khởi đầu trong lọ thủy tinh
+let brokenHeartsCount = 3; 
 
 try {
   currentUser = JSON.parse(localStorage.getItem('friendbook_user')) || null;
@@ -25,7 +25,6 @@ function initApp() {
     showAuthScreen();
   }
 
-  // Auth
   const regBtn = document.getElementById('register');
   const logBtn = document.getElementById('login');
   const logOutBtn = document.getElementById('logout');
@@ -33,11 +32,9 @@ function initApp() {
   if (logBtn) logBtn.addEventListener('click', handleLogin);
   if (logOutBtn) logOutBtn.addEventListener('click', handleLogout);
 
-  // Post
   const postBtn = document.getElementById('postBtn');
   if (postBtn) postBtn.addEventListener('click', handleCreatePost);
 
-  // Chat & Media (Ảnh, Video, Voice)
   const sendBtn = document.getElementById('sendBtn');
   const attachImageBtn = document.getElementById('attachImageBtn');
   const imageInput = document.getElementById('imageInput');
@@ -61,7 +58,6 @@ function initApp() {
     recordVoiceBtn.addEventListener('click', toggleVoiceRecording);
   }
 
-  // Friends
   const searchBtn = document.getElementById('searchFriendBtn');
   if (searchBtn) searchBtn.addEventListener('click', handleSearchFriends);
   const searchInput = document.getElementById('searchFriendInput');
@@ -71,20 +67,17 @@ function initApp() {
     });
   }
 
-  // Set Love - Đã được cập nhật đầy đủ và chuẩn xác
   const sendLoveBtn = document.getElementById('sendSetLoveBtn');
   if (sendLoveBtn) {
     sendLoveBtn.addEventListener('click', handleSendSetLoveRequest);
   }
 
-  // Admin - Phát Phiếu Bé Ngoan & Bé Hư
   const awardBtn = document.getElementById('awardBtn');
   if (awardBtn) awardBtn.addEventListener('click', () => handleAwardBadge('ngoan'));
 
   const awardBadBtn = document.getElementById('awardBadBtn');
   if (awardBadBtn) awardBadBtn.addEventListener('click', () => handleAwardBadge('hu'));
 
-  // Modal
   const closeModal = document.getElementById('closeModal');
   if (closeModal) {
     closeModal.addEventListener('click', () => {
@@ -92,7 +85,6 @@ function initApp() {
     });
   }
 
-  // Tabs
   document.querySelectorAll('.nav button[data-tab]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       switchTab(e.target.getAttribute('data-tab'));
@@ -108,10 +100,13 @@ function showMainApp() {
   
   if (currentUser.email === 'lengocnhu1805@gmail.com' || currentUser.email === 'admin') {
     document.getElementById('adminTab').classList.remove('hidden');
+    const adminMob = document.getElementById('adminMobileTab');
+    if (adminMob) adminMob.classList.remove('hidden');
     loadAdminUsers();
   }
 
-  loadFeed();
+  // Khởi tạo hiển thị tab Bảng tin mặc định để tránh màn hình trắng
+  switchTab('feed');
   checkRewardsNotification();
 }
 
@@ -201,7 +196,6 @@ function switchTab(tabName) {
   if (tabName === 'setlove') loadSetLoveData();
 }
 
-// Bảng tin với Optimistic Update
 async function loadFeed() {
   const container = document.getElementById('posts');
   if (!container) return;
@@ -227,7 +221,6 @@ async function handleCreatePost() {
   if (!content) return;
 
   contentInput.value = '';
-
   const container = document.getElementById('posts');
   const tempCard = document.createElement('div');
   tempCard.className = 'post-card';
@@ -263,7 +256,6 @@ async function handleCreatePost() {
   }
 }
 
-// Kết bạn & Tìm kiếm
 function loadFriendsData() {
   loadFriendRequests();
   loadMyFriends();
@@ -366,7 +358,6 @@ async function loadMyFriends() {
   } catch (e) {}
 }
 
-// Xử lý đính kèm Media (Ảnh, Video)
 function handleMediaUpload(e, type) {
   const file = e.target.files[0];
   if (!file) return;
@@ -379,7 +370,6 @@ function handleMediaUpload(e, type) {
   reader.readAsDataURL(file);
 }
 
-// Xử lý ghi âm Voice
 function toggleVoiceRecording() {
   if (!mediaRecorder || mediaRecorder.state === "inactive") {
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
@@ -427,8 +417,8 @@ async function loadChatUsers() {
 
 function selectChatUser(email, name) {
   currentChatUser = email;
-  const titleEl = document.getElementById('chatTitle');
-  if (titleEl) titleEl.textContent = `💬 Đang chat với: ${name}`;
+  const titleEl = document.getElementById('chatTitleText');
+  if (titleEl) titleEl.textContent = `Đang chat với: ${name}`;
   loadMessages();
 }
 
@@ -518,7 +508,6 @@ async function sendMessage() {
   }
 }
 
-// ================= TÍNH NĂNG SET LOVE & LỌ THỦY TINH =================
 async function loadSetLoveData() {
   const select = document.getElementById('setlovePartnerSelect');
   if (!select) return;
@@ -657,14 +646,6 @@ function removeBrokenHeart() {
   }
 }
 
-async function sendSetLoveMessage() {
-  const input = document.getElementById('setloveMsgInput');
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = '';
-}
-
-// Quản lý Phiếu Bé Ngoan & Phiếu Bé Hư
 async function checkRewardsNotification() {
   try {
     const res = await fetch(`${API_URL}?action=getRewards&email=${encodeURIComponent(currentUser.email)}`);
